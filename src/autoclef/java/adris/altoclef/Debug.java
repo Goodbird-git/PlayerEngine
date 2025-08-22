@@ -26,7 +26,7 @@ public class Debug {
    }
 
    public static void logCharacterMessage(String message, Character character, boolean isPublic) {
-      message = String.format("§1§l§o<%s>§r %s", character.shortName, message);
+      message = String.format("§1§l§o<%s>§r %s", character.shortName(), message);
       logInternal(message);
    }
 

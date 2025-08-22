@@ -14,8 +14,10 @@ import adris.altoclef.commandsystem.CommandExecutor;
 import adris.altoclef.control.InputControls;
 import adris.altoclef.control.PlayerExtraController;
 import adris.altoclef.control.SlotHandler;
-import adris.altoclef.player2api.AICommandBridge;
+import adris.altoclef.player2api.AIPersistantData;
 import adris.altoclef.player2api.Character;
+import adris.altoclef.player2api.EventQueueManager;
+import adris.altoclef.player2api.Player2APIService;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.tasksystem.TaskRunner;
 import adris.altoclef.trackers.CraftingRecipeTracker;
@@ -35,6 +37,9 @@ import baritone.api.utils.IInteractionController;
 import baritone.autoclef.AltoClefSettings;
 import java.util.Arrays;
 import java.util.List;
+import java.util.UUID;
+
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
@@ -66,12 +71,14 @@ public class AltoClefController {
    private Settings settings;
    private boolean paused = false;
    private Task storedTask;
-   private AICommandBridge aiBridge;
    public boolean isStopping = false;
    private Player owner;
+   private AIPersistantData aiPersistantData;
+   private Player2APIService player2apiService;
 
-   public AltoClefController(IBaritone baritone) {
+   public AltoClefController(IBaritone baritone, Character character, String player2GameId) {
       this.baritone = baritone;
+      EventQueueManager.getOrCreateEventQueueData(this);
       this.ctx = baritone.getEntityContext();
       this.commandExecutor = new CommandExecutor(this);
       this.taskRunner = new TaskRunner(this);
@@ -85,7 +92,8 @@ public class AltoClefController {
       new WorldSurvivalChain(this.taskRunner);
       this.foodChain = new FoodChain(this.taskRunner);
       new PlayerDefenseChain(this.taskRunner);
-      this.storageTracker = new ItemStorageTracker(this, this.trackerManager, container -> this.containerSubTracker = container);
+      this.storageTracker = new ItemStorageTracker(this, this.trackerManager,
+            container -> this.containerSubTracker = container);
       this.entityTracker = new EntityTracker(this.trackerManager);
       this.blockScanner = new BlockScanner(this);
       this.chunkTracker = new SimpleChunkTracker(this);
@@ -95,27 +103,32 @@ public class AltoClefController {
       this.userBlockRangeTracker = new UserBlockRangeTracker(this.trackerManager);
       this.inputControls = new InputControls(this);
       this.slotHandler = new SlotHandler(this);
-      this.aiBridge = new AICommandBridge(this.commandExecutor, this);
       this.extraController = new PlayerExtraController(this);
       this.initializeBaritoneSettings();
       this.botBehaviour = new BotBehaviour(this);
       this.initializeCommands();
-      Settings.load(
-         newSettings -> {
-            this.settings = newSettings;
-            List<Item> baritoneCanPlace = Arrays.stream(this.settings.getThrowawayItems(this, true)).toList();
-            this.getBaritoneSettings().acceptableThrowawayItems.get().addAll(baritoneCanPlace);
-            if ((!this.getUserTaskChain().isActive() || this.getUserTaskChain().isRunningIdleTask())
-               && this.getModSettings().shouldRunIdleCommandWhenNotActive()) {
-               this.getUserTaskChain().signalNextTaskToBeIdleTask();
-               this.getCommandExecutor().executeWithPrefix(this.getModSettings().getIdleCommand());
-            }
+      this.aiPersistantData = new AIPersistantData(this, character);
+      this.player2apiService = new Player2APIService(player2GameId);
 
-            this.getExtraBaritoneSettings().avoidBlockBreak(this.userBlockRangeTracker::isNearUserTrackedBlock);
-            this.getExtraBaritoneSettings().avoidBlockPlace(this.entityStuckTracker::isBlockedByEntity);
-         }
-      );
+      Settings.load(
+            newSettings -> {
+               this.settings = newSettings;
+               List<Item> baritoneCanPlace = Arrays.stream(this.settings.getThrowawayItems(this, true)).toList();
+               this.getBaritoneSettings().acceptableThrowawayItems.get().addAll(baritoneCanPlace);
+               if ((!this.getUserTaskChain().isActive() || this.getUserTaskChain().isRunningIdleTask())
+                     && this.getModSettings().shouldRunIdleCommandWhenNotActive()) {
+                  this.getUserTaskChain().signalNextTaskToBeIdleTask();
+                  this.getCommandExecutor().executeWithPrefix(this.getModSettings().getIdleCommand());
+               }
+
+               this.getExtraBaritoneSettings().avoidBlockBreak(this.userBlockRangeTracker::isNearUserTrackedBlock);
+               this.getExtraBaritoneSettings().avoidBlockPlace(this.entityStuckTracker::isBlockedByEntity);
+            });
       Playground.IDLE_TEST_INIT_FUNCTION(this);
+   }
+
+   public static void staticServerTick(MinecraftServer server) {
+      EventQueueManager.injectOnTick(server);
    }
 
    public void serverTick() {
@@ -127,9 +140,6 @@ public class AltoClefController {
       this.taskRunner.tick();
       this.inputControls.onTickPost();
       this.baritone.serverTick();
-      if (this.aiBridge.getEnabled()) {
-         this.aiBridge.onTick();
-      }
    }
 
    public void stop() {
@@ -180,7 +190,8 @@ public class AltoClefController {
    }
 
    public void runUserTask(Task task) {
-      this.runUserTask(task, () -> {});
+      this.runUserTask(task, () -> {
+      });
    }
 
    public void cancelUserTask() {
@@ -212,7 +223,7 @@ public class AltoClefController {
    }
 
    public AltoClefSettings getExtraBaritoneSettings() {
-      return ((Baritone)this.baritone).getExtraBaritoneSettings();
+      return ((Baritone) this.baritone).getExtraBaritoneSettings();
    }
 
    public TaskRunner getTaskRunner() {
@@ -315,15 +326,11 @@ public class AltoClefController {
       return this.extraController;
    }
 
-   public AICommandBridge getAiBridge() {
-      return this.aiBridge;
-   }
-
    public void setChatClefEnabled(boolean enabled) {
-      this.getAiBridge().setEnabled(enabled);
+      EventQueueManager.getOrCreateEventQueueData(this).setEnabled(enabled);
       if (!enabled) {
-         this.getUserTaskChain().cancel(this);
-         this.getTaskRunner().disable();
+         getUserTaskChain().cancel(this);
+         getTaskRunner().disable();
       }
    }
 
@@ -346,7 +353,19 @@ public class AltoClefController {
       return this.owner;
    }
 
+   public boolean isOwner(UUID playerToCheck) {
+      return playerToCheck.equals(owner.getUUID());
+   }
+
    public void setOwner(Player owner) {
       this.owner = owner;
+   }
+
+   public AIPersistantData getAIPersistantData() {
+      return this.aiPersistantData;
+   }
+
+   public Player2APIService getPlayer2APIService(){
+      return this.player2apiService;
    }
 }

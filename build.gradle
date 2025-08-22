@@ -31,6 +31,10 @@ repositories {
     maven {
         url = "https://maven.quiltmc.org/repository/release/"
     }
+    maven {
+         name = 'ParchmentMC'
+         url = 'https://maven.parchmentmc.org'
+    }
 
     mavenLocal()
 
