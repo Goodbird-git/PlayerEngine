@@ -1,4 +1,5 @@
 package adris.altoclef.player2api;
+
 import java.util.Deque;
 import java.util.Optional;
 import java.util.UUID;
@@ -78,21 +79,24 @@ public class EventQueueData {
         this.isProcessing = true;
 
         // prepare conversation history for LLM call
-        Event lastEvent = mod.getAIPersistantData().dumpEventQueueToConversationHistoryAndReturnLastEvent(eventQueue, mod.getPlayer2APIService());
+        Event lastEvent = mod.getAIPersistantData().dumpEventQueueToConversationHistoryAndReturnLastEvent(eventQueue,
+                mod.getPlayer2APIService());
         Optional<String> reminderString = getReminderStringFromLastEvent(lastEvent);
 
         String agentStatus = AgentStatus.fromMod(this.mod).toString();
         String worldStatus = WorldStatus.fromMod(this.mod).toString();
         String altoClefDebugMsgs = this.altoClefMsgBuffer.dumpAndGetString();
         ConversationHistory historyWithWrappedStatus = mod.getAIPersistantData()
-                .getConversationHistoryWrappedWithStatus(worldStatus, agentStatus, altoClefDebugMsgs, mod.getPlayer2APIService(), reminderString);
+                .getConversationHistoryWrappedWithStatus(worldStatus, agentStatus, altoClefDebugMsgs,
+                        mod.getPlayer2APIService(), reminderString);
 
         LOGGER.info("[AICommandBridge/processChatWithAPI]: Calling LLM: history={}",
                 new Object[] { historyWithWrappedStatus.toString() });
 
         Consumer<JsonObject> onLLMResponse = jsonResp -> {
             String llmMessage = Utils.getStringJsonSafely(jsonResp, "message");
-            String command = this.isGreetingResponse? "bodylang greeting": Utils.getStringJsonSafely(jsonResp, "command");
+            String command = this.isGreetingResponse ? "bodylang greeting"
+                    : Utils.getStringJsonSafely(jsonResp, "command");
             this.isGreetingResponse = false;
             LOGGER.info("[AICommandBridge/processCharWithAPI]: Processed LLM repsonse: message={} command={}",
                     llmMessage, command);
@@ -134,11 +138,13 @@ public class EventQueueData {
         eventQueue.add(event);
     }
 
-    private Optional<String> getReminderStringFromLastEvent(Event lastEvent){
-        if(lastEvent instanceof Event.UserMessage){
-            return Optional.of(((Event.UserMessage) lastEvent).userName().equals(getMod().getOwnerUsername()) ? Prompts.reminderOnOwnerMsg : Prompts.reminderOnOtherUSerMsg);
+    private Optional<String> getReminderStringFromLastEvent(Event lastEvent) {
+        if (lastEvent instanceof Event.UserMessage) {
+            return Optional.of(((Event.UserMessage) lastEvent).userName().equals(getMod().getOwnerUsername())
+                    ? Prompts.reminderOnOwnerMsg
+                    : Prompts.reminderOnOtherUSerMsg);
         }
-        if(lastEvent instanceof Event.CharacterMessage){
+        if (lastEvent instanceof Event.CharacterMessage) {
             return Optional.of(Prompts.reminderOnAIMsg);
         }
         return Optional.empty();
@@ -170,24 +176,37 @@ public class EventQueueData {
     }
 
     public void onCommandFinish(AgentSideEffects.CommandExecutionStopReason stopReason) {
+        LOGGER.info("on command finish for cmd={}", stopReason.commandName());
         if (stopReason instanceof CommandExecutionStopReason.Finished) {
-            if(shouldIgnoreGreetingDance){
+            LOGGER.info("on command={} finish case", stopReason.commandName());
+            if (shouldIgnoreGreetingDance && stopReason.commandName().contains("bodylang greeting")) {
+                LOGGER.info("Skipping on command finish because should ignore greeting dance");
                 // ignore first greeting command finish:
                 shouldIgnoreGreetingDance = false;
                 return;
+            } else {
+                shouldIgnoreGreetingDance = false;
             }
             if (eventQueue.isEmpty()) {
+
+                LOGGER.info("adding cmd={} to queue because it finished and queue not empty", stopReason.commandName());
                 addEventToQueue(new InfoMessage(String.format(
                         "Command feedback: %s finished running. What shall we do next? If no new action is needed to finish user's request, generate empty command `\"\"`.",
                         stopReason.commandName())));
+            } else {
+                LOGGER.info("Skipping command stop for cmd={} because queue not empty", stopReason.commandName());
             }
         } else if (stopReason instanceof CommandExecutionStopReason.Error) {
+            LOGGER.info("adding cmd={} to queue because it errored", stopReason.commandName());
             addEventToQueue(new InfoMessage(String.format(
                     "Command feedback: %s FAILED. The error was %s.",
                     stopReason.commandName(),
                     ((CommandExecutionStopReason.Error) stopReason).errMsg())));
         }
-        // do nothing otherwise (if canceled)
+        else{
+            LOGGER.info("Skipping command stop for cmd={} because it was cancelled", stopReason.commandName());
+        }
+        // (if canceled dont modify queue)
     }
 
     // Utils:
@@ -214,15 +233,17 @@ public class EventQueueData {
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;
     }
-    public Character getCharacter(){
+
+    public Character getCharacter() {
         return mod.getAIPersistantData().getCharacter();
     }
-    public Player2APIService getPlayer2apiService(){
+
+    public Player2APIService getPlayer2apiService() {
         return mod.getPlayer2APIService();
     }
-    public String getName(){
+
+    public String getName() {
         return getCharacter().shortName();
     }
-
 
 }

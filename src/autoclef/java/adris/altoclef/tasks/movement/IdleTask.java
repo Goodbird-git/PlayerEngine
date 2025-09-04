@@ -2,7 +2,6 @@ package adris.altoclef.tasks.movement;
 
 import adris.altoclef.Playground;
 import adris.altoclef.tasksystem.Task;
-import adris.altoclef.util.helpers.LookHelper;
 
 public class IdleTask extends Task {
    @Override
@@ -11,16 +10,7 @@ public class IdleTask extends Task {
 
    @Override
    protected Task onTick() {
-      if(this.controller.getOwner() != null){
-         LookHelper.lookAt(this.controller, this.controller.getOwner().getEyePosition());
-      }
-      else{
-         this.controller.getClosestPlayer().ifPresent(
-            (player) -> {
-               LookHelper.lookAt(controller, player.getEyePosition());
-            }
-         );
-      }
+      
       Playground.IDLE_TEST_TICK_FUNCTION(this.controller);
       return null;
    }

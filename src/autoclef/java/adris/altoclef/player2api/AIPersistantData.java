@@ -28,7 +28,7 @@ public class AIPersistantData {
     }
 
     public Event getGreetingEvent() {
-        String suffix = " IMPORTANT: SINCE THIS IS THE FIRST MESSAGE, DO NOT SEND A COMMAND!!";
+        String suffix = " IMPORTANT: SINCE THIS IS THE FIRST MESSAGE, ONLY USE COMMAND `bodylang greeting`";
         if (conversationHistory.isLoadedFromFile()) {
             return (new InfoMessage("You want to welcome user back." + suffix));
         } else {

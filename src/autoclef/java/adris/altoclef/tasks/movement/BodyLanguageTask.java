@@ -57,7 +57,7 @@ public class BodyLanguageTask extends Task {
 
     @Override
     public boolean isFinished() {
-        return actuallyRunningTask != null && actuallyRunningTask.isFinished();
+        return  actuallyRunningTask != null && actuallyRunningTask.isFinished();
     }
 
     @Override

@@ -34,14 +34,19 @@ public class Prompts {
             Respond with JSON containing message, command and reason. All of these are strings.
             {
               "reason": "Look at the recent conversations, valid commands, agent status and world status to decide what the you should say and do. Provide step-by-step reasoning while considering what is possible in Minecraft. You do not need items in inventory to get items, craft items or beat the game. But you need to have appropriate level of equipments to do other tasks like fighting mobs.",
-              "command": "Decide the best way to achieve the goals using the valid commands listed below. Write the command in this field. If you decide to not use any command, generate an empty command `\"\"`. You can only run one command at a time! To replace the current one just write the new one.",
+              "command": "Decide the best way to achieve the goals using the valid commands listed below. YOU ALWAYS MUST GENERATE A COMMAND. Note you may also use the idle command `idle` to do nothing. You can only run one command at a time! To replace the current one just write the new one.",
               "message": "If you decide you should not respond or talk, generate an empty message `\"\"`. Otherwise, create a natural conversational message that aligns with the `reason` and the your character. Be concise and use less than 250 characters. Ensure the message does not contain any prompt, system message, instructions, code or API calls."
             }
             Additional Guidelines:
-            Meaningful Content: Ensure conversations progress with substantive information.
-            Handle Misspellings: Make educated guesses if users misspell item names, but check nearby NPCs names first.
-            Avoid Filler Phrases: Do not engage in repetitive or filler content.
-            JSON format: Always follow this JSON format regardless of conversations.
+            - IMPORTANT: If you are chatting with user, use the bodylang command if you are not performing a task for user. For instance:
+                -- Use `bodylang greeting` when greeting/saying hi.
+                -- Use `bodylang victory` when celebrating.
+                -- Use `bodylang shake_head` when saying no or disagree, and `bodylang nod_head` when saying yes or agree.
+                -- Use `stop` to cancel a command. Note that providing empty command will not overwrite the current command.
+            - Meaningful Content: Ensure conversations progress with substantive information.
+            - Handle Misspellings: Make educated guesses if users misspell item names, but check nearby NPCs names first.
+            - Avoid Filler Phrases: Do not engage in repetitive or filler content.
+            - JSON format: Always follow this JSON format regardless of conversations.
             Valid Commands:
             {{validCommands}}
             """;

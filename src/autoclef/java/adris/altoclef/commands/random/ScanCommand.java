@@ -45,7 +45,8 @@ public class ScanCommand extends Command {
 
       if (block == null) {
          String closest = FuzzySearchHelper.getClosestMatchMinecraftItems(blockStr, allBlockNames);
-         mod.log("Block named: \"" + blockStr + "\" not a valid block. Perhaps the user meant \"" + closest + "\"?");
+         mod.log("Block named: \"" + blockStr + "\" not a valid block. Perhaps the user meant \"" + closest + "\"?" + (blockStr.contains("log") ? " Can try 'log' as well": ""));
+
          this.finish();
       } else {
          BlockScanner blockScanner = mod.getBlockScanner();

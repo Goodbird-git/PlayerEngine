@@ -7,6 +7,7 @@ import org.apache.logging.log4j.Logger;
 
 import adris.altoclef.AltoClefController;
 import adris.altoclef.commandsystem.CommandExecutor;
+import adris.altoclef.tasks.LookAtOwnerTask;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
@@ -67,18 +68,33 @@ public class AgentSideEffects {
         } else {
             mod.isStopping = false;
         }
+        if(commandWithPrefix.contains("idle")){
+            mod.runUserTask(new LookAtOwnerTask());
+            return;
+        }
         cmdExecutor.execute(commandWithPrefix, () -> {
             if (mod.isStopping) {
-                System.out.printf(
+                LOGGER.info(
                         "[AgentSideEffects/AgentSideEffects]: (%s) was cancelled. Not adding finish event to queue.",
                         commandWithPrefix);
                 // Other canceled logic here
                 onStop.accept(new CommandExecutionStopReason.Cancelled(commandWithPrefix));
+                LOGGER.info("after cancel, not running look at owner");
             } else {
-                onStop.accept(new CommandExecutionStopReason.Finished(commandWithPrefix));
+                if(!commandWithPrefix.equals("@bodylang greeting")){
+                    LOGGER.info("Running on stop after finish cmd={}", commandWithPrefix);
+                    onStop.accept(new CommandExecutionStopReason.Finished(commandWithPrefix));
+                }
+                else{
+                    LOGGER.info("Ignore onStop for bodylang greeting");
+                }
+                LOGGER.info("Running look at owner task after finish cmd={}", commandWithPrefix);
+                mod.runUserTask(new LookAtOwnerTask());
             }
         }, (err) -> {
             onStop.accept(new CommandExecutionStopReason.Error(commandWithPrefix, err.getMessage()));
+            LOGGER.info("Running look at owner aftr error in cmd={}", commandWithPrefix);
+            mod.runUserTask(new LookAtOwnerTask());
         });
     }
 
