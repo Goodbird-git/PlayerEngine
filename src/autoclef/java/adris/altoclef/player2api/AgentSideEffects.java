@@ -1,6 +1,7 @@
 
 package adris.altoclef.player2api;
 
+import java.util.Optional;
 import java.util.function.Consumer;
 
 import adris.altoclef.player2api.manager.ConversationManager;
@@ -69,10 +70,17 @@ public class AgentSideEffects {
         String commandWithPrefix = cmdExecutor.isClientCommand(command) ? command
                 : (cmdExecutor.getCommandPrefix() + command);
         if (commandWithPrefix.equals("@stop")) {
+            mod.currentlyRunningCommand = Optional.empty();
+            LOGGER.info("Stop command, running mod.isStopping");
             mod.isStopping = true;
         } else {
             mod.isStopping = false;
         }
+        if (commandWithPrefix.equals("@continue")) {
+            LOGGER.info("Continue command,should continue keep running current command.");
+            return;
+        }
+        mod.currentlyRunningCommand = Optional.of(commandWithPrefix.substring(1));
         if (commandWithPrefix.contains("idle")) {
             mod.runUserTask(new LookAtOwnerTask());
             return;
@@ -84,6 +92,8 @@ public class AgentSideEffects {
                 "$1 \"$2\"");
 
         cmdExecutor.execute(processedCommandWithPrefix, () -> {
+            // on finish
+            mod.currentlyRunningCommand = Optional.empty();
             if (mod.isStopping) {
                 LOGGER.info(
                         "[AgentSideEffects/AgentSideEffects]: (%s) was cancelled. Not adding finish event to queue.",

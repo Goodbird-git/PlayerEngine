@@ -14,7 +14,7 @@ import com.google.gson.JsonObject;
 
 import adris.altoclef.AltoClefController;
 import adris.altoclef.player2api.AgentSideEffects.CommandExecutionStopReason;
-import adris.altoclef.player2api.Event.InfoMessage;
+import adris.altoclef.player2api.Event.CommandInfoMessage;
 import adris.altoclef.player2api.status.AgentStatus;
 import adris.altoclef.player2api.status.StatusUtils;
 import adris.altoclef.player2api.status.WorldStatus;
@@ -178,6 +178,12 @@ public class AgentConversationData {
 
     public void onCommandFinish(AgentSideEffects.CommandExecutionStopReason stopReason) {
         LOGGER.info("on command finish for cmd={}", stopReason.commandName());
+        // remove all command info messages, do not need these because command not
+        // running anymore
+        eventQueue.removeIf(evt -> {
+            return (evt instanceof CommandInfoMessage);
+        });
+
         if (stopReason instanceof CommandExecutionStopReason.Finished) {
             LOGGER.info("on command={} finish case", stopReason.commandName());
             if (shouldIgnoreGreetingDance && stopReason.commandName().contains("bodylang greeting")) {
@@ -189,9 +195,8 @@ public class AgentConversationData {
                 shouldIgnoreGreetingDance = false;
             }
             if (eventQueue.isEmpty()) {
-
                 LOGGER.info("adding cmd={} to queue because it finished and queue not empty", stopReason.commandName());
-                addEventToQueue(new InfoMessage(String.format(
+                addEventToQueue(new CommandInfoMessage(stopReason.commandName(), String.format(
                         "Command feedback: %s finished running. What shall we do next? If no new action is needed to finish user's request, generate empty command `\"\"`.",
                         stopReason.commandName())));
             } else {
@@ -199,7 +204,7 @@ public class AgentConversationData {
             }
         } else if (stopReason instanceof CommandExecutionStopReason.Error) {
             LOGGER.info("adding cmd={} to queue because it errored", stopReason.commandName());
-            addEventToQueue(new InfoMessage(String.format(
+            addEventToQueue(new CommandInfoMessage(stopReason.commandName(), String.format(
                     "Command feedback: %s FAILED. The error was %s.",
                     stopReason.commandName(),
                     ((CommandExecutionStopReason.Error) stopReason).errMsg())));

@@ -84,6 +84,14 @@ public class ConversationManager {
         });
     }
 
+    public static void onUpdateCommandStatus(AgentConversationData d, String commandName, String status) {
+        LOGGER.info("Command status event cmdName={}, status={}", commandName, status);
+        d.onEvent(new Event.CommandInfoMessage(
+                commandName,
+                String.format("Command feedback: While running command='%s', status got updated to status='%s'",
+                        commandName, status)));
+    }
+
     // register when an AI character messages
     public static void onAICharacterMessage(Event.CharacterMessage msg, UUID senderId) {
         UUID sendingUUID = msg.sendingCharacterData().getUUID();

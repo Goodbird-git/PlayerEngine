@@ -244,4 +244,10 @@ public class StatusUtils {
             .map(p -> p.distanceTo(mod.getPlayer()))
             .orElse(Float.MAX_VALUE);
    }
+
+   public static String getCurrentlyRunningCommand(AltoClefController mod) {
+      return mod.currentlyRunningCommand.orElseGet(() -> {
+         return "No command currently running.";
+      });
+   }
 }

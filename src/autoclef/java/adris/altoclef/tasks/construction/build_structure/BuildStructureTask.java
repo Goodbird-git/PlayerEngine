@@ -19,6 +19,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.Block;
+import adris.altoclef.util.time.TimerGame;
 
 public class BuildStructureTask extends Task {
     private static final int maxNumErrors = 2;
@@ -32,6 +33,9 @@ public class BuildStructureTask extends Task {
     private Task actuallyRunningTask;
     private ConversationHistory history;
     private LLMCompleter completer;
+    private long tickCounter = 0;
+    private TimerGame statusMsgTimerGame = new TimerGame(40.0);
+    private boolean started = false;
 
     private class RequestLLMCode extends Task {
         // outer option: isDone, either: (left=code (success), right=errStr)
@@ -61,6 +65,11 @@ public class BuildStructureTask extends Task {
 
         @Override
         protected Task onTick() {
+            if (statusMsgTimerGame.elapsed() && started) {
+                statusMsgTimerGame.reset();
+                mod.updateCommandstatus(
+                        "Still thinking/planning about how to build, you aren't actually building yet but are still planning. This may still take a while or may be close to being done. Make sure to not repeat the same message over and over.");
+            }
             return null;
         }
 
@@ -83,6 +92,7 @@ public class BuildStructureTask extends Task {
         Optional<Optional<String>> result = Optional.empty();
 
         public BuildFromCode(String code) {
+            statusMsgTimerGame.reset();
             this.code = code;
             this.buildThread = Executors.newSingleThreadExecutor();
             buildThread.submit(() -> {
@@ -112,6 +122,7 @@ public class BuildStructureTask extends Task {
 
         @Override
         protected void onStart() {
+            statusMsgTimerGame.reset();
             // TODO Auto-generated method stub
 
         }
@@ -124,6 +135,10 @@ public class BuildStructureTask extends Task {
 
         @Override
         protected Task onTick() {
+            if (statusMsgTimerGame.elapsed() && started) {
+                statusMsgTimerGame.reset();
+                mod.updateCommandstatus("Still actually building");
+            }
             // TODO Auto-generated method stub
             return null;
         }
@@ -154,6 +169,9 @@ public class BuildStructureTask extends Task {
     @Override
     protected void onStart() {
         actuallyRunningTask = new RequestLLMCode();
+        mod.updateCommandstatus(
+                "Starting to think about how to build. Let the user know that you are starting to plan/think about how to build, and that you are thinking/planning, not actually building yet, and that this may take a while.");
+        statusMsgTimerGame.reset();
     }
 
     @Override
@@ -191,6 +209,7 @@ public class BuildStructureTask extends Task {
             return actuallyRunningTask;
         }
         if (actuallyRunningTask instanceof BuildFromCode) {
+
             Optional<String> result = ((BuildFromCode) actuallyRunningTask).result.get();
             // set actually running task in both cases
             result.ifPresentOrElse(
