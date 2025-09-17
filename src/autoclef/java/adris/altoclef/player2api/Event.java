@@ -1,7 +1,7 @@
 package adris.altoclef.player2api;
 
 public sealed interface Event // tagged union basically of the below events
-        permits Event.UserMessage, Event.CharacterMessage, Event.InfoMessage {
+        permits Event.UserMessage, Event.CharacterMessage, Event.InfoMessage, Event.CommandInfoMessage {
     String message();
 
     public String getConversationHistoryString();
@@ -16,13 +16,23 @@ public sealed interface Event // tagged union basically of the below events
         }
     }
 
-    public record InfoMessage(String message) implements Event {
+    public record CommandInfoMessage(String commandName, String message) implements Event {
         public String getConversationHistoryString() {
-            return String.format("Info: %s", message);
+            return String.format("[CommandInfo]: %s", message);
         }
 
         public String toString() {
-            return getConversationHistoryString();
+            return String.format("CommandInfoMessage(commandName='%s', message='%s')", commandName, message);
+        }
+    }
+
+    public record InfoMessage(String message) implements Event {
+        public String getConversationHistoryString() {
+            return String.format("[Info]: %s", message);
+        }
+
+        public String toString() {
+            return String.format("InfoMessage(message='%s')", message);
         }
     }
 

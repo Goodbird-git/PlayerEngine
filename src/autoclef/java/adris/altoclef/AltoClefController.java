@@ -16,6 +16,7 @@ import adris.altoclef.control.PlayerExtraController;
 import adris.altoclef.control.SlotHandler;
 
 import adris.altoclef.player2api.manager.ConversationManager;
+import adris.altoclef.player2api.status.StatusUtils;
 import adris.altoclef.player2api.AIPersistantData;
 import adris.altoclef.player2api.Player2APIService;
 
@@ -49,6 +50,8 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class AltoClefController {
    private final IBaritone baritone;
@@ -80,6 +83,8 @@ public class AltoClefController {
    private Task storedTask;
    public boolean isStopping = false;
    private Player owner;
+   public Optional<String> currentlyRunningCommand = Optional.empty();
+   public static final Logger LOGGER = LogManager.getLogger();
 
    public AltoClefController(IBaritone baritone, Character character, String player2GameId) {
       this.baritone = baritone;
@@ -396,5 +401,16 @@ public class AltoClefController {
          float bdist = b.distanceTo(this.getEntity());
          return Float.compare(adist, bdist);
       }).findFirst();
+   }
+
+   public void updateCommandstatus(String status) {
+      if (currentlyRunningCommand.isPresent()) {
+         String cmd = currentlyRunningCommand.get();
+         ConversationManager.onUpdateCommandStatus(ConversationManager.getOrCreateEventQueueData(this), cmd,
+               status);
+      } else {
+         LOGGER.error("ERROR: called updateCommandStats({}) when currentlyRunningCommand was not present! skipping",
+               status);
+      }
    }
 }
