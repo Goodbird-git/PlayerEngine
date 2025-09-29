@@ -24,12 +24,14 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.tags.ItemTags;
 import net.minecraft.util.Tuple;
 import net.minecraft.world.entity.item.ItemEntity;
-import net.minecraft.world.item.DiggerItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.component.Tool;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.phys.Vec3;
 
@@ -124,10 +126,9 @@ public class MineAndCollectTask extends ResourceTask {
             Item item = cursorStack.getItem();
             if (item.isCorrectToolForDrops(cursorStack, mod.getWorld().getBlockState(this.subtask.miningPos()))) {
                Item currentlyEquipped = StorageHelper.getItemStackInSlot(PlayerSlot.getEquipSlot(mod.getInventory())).getItem();
-               if (item instanceof DiggerItem) {
-                  if (currentlyEquipped instanceof DiggerItem currentPick) {
-                     DiggerItem swapPick = (DiggerItem)item;
-                     if (ToolMaterialVer.getMiningLevel(swapPick) > ToolMaterialVer.getMiningLevel(currentPick)) {
+               if (item.components().has(DataComponents.TOOL)) {
+                  if (currentlyEquipped.components().has(DataComponents.TOOL)) {
+                     if (ToolMaterialVer.getMiningLevel(item).size() > ToolMaterialVer.getMiningLevel(currentlyEquipped).size()) {
                         mod.getSlotHandler().forceEquipSlot(this.controller, CursorSlot.SLOT);
                      }
                   } else {

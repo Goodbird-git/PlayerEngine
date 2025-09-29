@@ -102,8 +102,8 @@ public class SetCommand extends Command {
                   component.append(typeComponent);
                   component.setStyle(
                      component.getStyle()
-                        .withHoverEvent(new HoverEvent(Action.SHOW_TEXT, hoverComponent))
-                        .withClickEvent(new ClickEvent(net.minecraft.network.chat.ClickEvent.Action.SUGGEST_COMMAND, commandSuggestion))
+                        .withHoverEvent(new HoverEvent.ShowText(hoverComponent))
+                        .withClickEvent(new ClickEvent.SuggestCommand(commandSuggestion))
                   );
                   return component;
                },
@@ -172,10 +172,9 @@ public class SetCommand extends Command {
                   oldValueComponent.setStyle(
                      oldValueComponent.getStyle()
                         .applyFormat(ChatFormatting.GRAY)
-                        .withHoverEvent(new HoverEvent(Action.SHOW_TEXT, Component.literal("Click to set the setting back to this value")))
+                        .withHoverEvent(new HoverEvent.ShowText(Component.literal("Click to set the setting back to this value")))
                         .withClickEvent(
-                           new ClickEvent(
-                              net.minecraft.network.chat.ClickEvent.Action.RUN_COMMAND,
+                           new ClickEvent.RunCommand(
                               "/automatone " + String.format("set %s %s", setting.getName(), oldValue)
                            )
                         )

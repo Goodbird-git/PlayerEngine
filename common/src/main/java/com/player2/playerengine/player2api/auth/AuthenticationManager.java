@@ -4,10 +4,12 @@ import com.google.gson.JsonObject;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.net.URI;
 import java.util.Map;
 import java.util.concurrent.*;
 import com.player2.playerengine.player2api.utils.HTTPUtils;
@@ -80,13 +82,13 @@ public class AuthenticationManager {
                 String verificationUriComplete = deviceCodeResponse.get("verificationUriComplete").getAsString();
                 int interval = deviceCodeResponse.get("interval").getAsInt();
 
-                player.sendSystemMessage(Component.literal(String.format("To use AI features from mod '%s', please authorize here: %s", clientId, verificationUriComplete)).withStyle(Style.EMPTY.withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, verificationUriComplete))));
+                ((ServerPlayer)player).sendSystemMessage(Component.literal(String.format("To use AI features from mod '%s', please authorize here: %s", clientId, verificationUriComplete)).withStyle(Style.EMPTY.withClickEvent(new ClickEvent.OpenUrl(new URI(verificationUriComplete)))));
 
                 startPolling(player, clientId, deviceCode, interval, authFuture);
 
             } catch (Exception e) {
                 LOGGER.error("Authentication failed for {}", authKey, e);
-                player.sendSystemMessage(Component.literal("Authentication process for mod '" + clientId + "' failed."));
+                ((ServerPlayer)player).sendSystemMessage(Component.literal("Authentication process for mod '" + clientId + "' failed."));
                 authFuture.completeExceptionally(e);
                 ongoingAuths.remove(authKey);
             }
@@ -133,7 +135,7 @@ public class AuthenticationManager {
         String username = player.getName().getString();
 
         TokenStorage.storeToken(username, clientId, token);
-        player.sendSystemMessage(Component.literal("Authentication for mod '" + clientId + "' successful!"));
+        ((ServerPlayer)player).sendSystemMessage(Component.literal("Authentication for mod '" + clientId + "' successful!"));
         authFuture.complete(token);
         stopPolling(authKey);
         ongoingAuths.remove(authKey);

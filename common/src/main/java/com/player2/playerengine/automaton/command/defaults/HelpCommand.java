@@ -62,7 +62,7 @@ public class HelpCommand extends Command {
          command.getLongDesc().forEach(message -> this.logDirect(source, message));
          this.logDirect(source, "");
          MutableComponent returnComponent = Component.literal("Click to return to the help menu");
-         returnComponent.setStyle(returnComponent.getStyle().withClickEvent(new ClickEvent(Action.RUN_COMMAND, "/automatone " + label)));
+         returnComponent.setStyle(returnComponent.getStyle().withClickEvent(new ClickEvent.RunCommand("/automatone " + label)));
          this.logDirect(source, new Component[]{returnComponent});
       } else {
          Paginator.paginate(
@@ -87,8 +87,8 @@ public class HelpCommand extends Command {
                component.append(shortDescComponent);
                component.setStyle(
                   component.getStyle()
-                     .withHoverEvent(new HoverEvent(net.minecraft.network.chat.HoverEvent.Action.SHOW_TEXT, hoverComponent))
-                     .withClickEvent(new ClickEvent(Action.RUN_COMMAND, clickCommand))
+                     .withHoverEvent(new HoverEvent.ShowText(hoverComponent))
+                     .withClickEvent(new ClickEvent.RunCommand(clickCommand))
                );
                return component;
             },

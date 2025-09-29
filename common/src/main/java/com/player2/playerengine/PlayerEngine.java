@@ -11,6 +11,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.EntityType;
@@ -32,7 +33,7 @@ public final class PlayerEngine {
       .sized(EntityType.FISHING_BOBBER.getWidth(), EntityType.FISHING_BOBBER.getHeight())
       .clientTrackingRange(64)
       .updateInterval(1)
-      .build("fishing_bobber");
+      .build(ResourceKey.create(Registries.ENTITY_TYPE, id("fishing_bobber")));
 
    public static ResourceLocation id(String path) {
       return ResourceLocation.fromNamespaceAndPath(MOD_ID, path);

@@ -184,7 +184,7 @@ public class PlaceBedAndSetSpawnTask extends Task {
                   try {
                      Direction face = (Direction)mod.getWorld().getBlockState(toSleepIn).getValue(BedBlock.FACING);
                      Direction side = face.getClockWise();
-                     return new GetToBlockTask(this.bedForSpawnPoint.offset(side.getNormal()));
+                     return new GetToBlockTask(this.bedForSpawnPoint.offset(side.getUnitVec3i()));
                   } catch (IllegalArgumentException var7) {
                   }
                } else {

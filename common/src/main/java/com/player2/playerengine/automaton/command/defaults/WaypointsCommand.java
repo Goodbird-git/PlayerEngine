@@ -72,10 +72,9 @@ public class WaypointsCommand extends Command {
             component.append(timestamp);
             component.setStyle(
                component.getStyle()
-                  .withHoverEvent(new HoverEvent(net.minecraft.network.chat.HoverEvent.Action.SHOW_TEXT, Component.literal("Click to select")))
+                  .withHoverEvent(new HoverEvent.ShowText(Component.literal("Click to select")))
                   .withClickEvent(
-                     new ClickEvent(
-                        net.minecraft.network.chat.ClickEvent.Action.RUN_COMMAND,
+                     new ClickEvent.RunCommand(
                         String.format(
                            "%s%s %s %s @ %d", "/automatone ", label, _action.names[0], waypointx.getTag().getName(), waypointx.getCreationTimestamp()
                         )
@@ -179,8 +178,7 @@ public class WaypointsCommand extends Command {
                deleteComponent.setStyle(
                   deleteComponent.getStyle()
                      .withClickEvent(
-                        new ClickEvent(
-                           net.minecraft.network.chat.ClickEvent.Action.RUN_COMMAND,
+                        new ClickEvent.RunCommand(
                            String.format("%s%s delete %s @ %d", "/automatone ", label, waypoint.getTag().getName(), waypoint.getCreationTimestamp())
                         )
                      )
@@ -189,8 +187,7 @@ public class WaypointsCommand extends Command {
                goalComponent.setStyle(
                   goalComponent.getStyle()
                      .withClickEvent(
-                        new ClickEvent(
-                           net.minecraft.network.chat.ClickEvent.Action.RUN_COMMAND,
+                        new ClickEvent.RunCommand(
                            String.format("%s%s goal %s @ %d", "/automatone ", label, waypoint.getTag().getName(), waypoint.getCreationTimestamp())
                         )
                      )
@@ -199,7 +196,7 @@ public class WaypointsCommand extends Command {
                backComponent.setStyle(
                   backComponent.getStyle()
                      .withClickEvent(
-                        new ClickEvent(net.minecraft.network.chat.ClickEvent.Action.RUN_COMMAND, String.format("%s%s list", "/automatone ", label))
+                        new ClickEvent.RunCommand(String.format("%s%s list", "/automatone ", label))
                      )
                );
                this.logDirect(source, new Component[]{deleteComponent});

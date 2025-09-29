@@ -147,7 +147,7 @@ public class Playground {
                FileWriter fw = new FileWriter(f);
 
                for (ResourceLocation id : BuiltInRegistries.ITEM.keySet()) {
-                  Item item = (Item)BuiltInRegistries.ITEM.get(id);
+                  Item item = (Item)BuiltInRegistries.ITEM.get(id).get().value();
                   if (!TaskCatalogue.isObtainable(item)) {
                      unobtainable++;
                      fw.write(item.getDescriptionId() + "\n");

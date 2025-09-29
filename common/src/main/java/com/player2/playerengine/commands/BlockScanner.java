@@ -384,7 +384,7 @@ public class BlockScanner {
       boolean isPriorityChunk = this.getChunkDist(chunkPos, playerChunkPos) <= 2;
 
       for (int x = chunkPos.getMinBlockX(); x <= chunkPos.getMaxBlockX(); x++) {
-         for (int y = world.getMinBuildHeight(); y < world.getMaxBuildHeight(); y++) {
+         for (int y = world.getMinY(); y < world.getMaxY(); y++) {
             for (int z = chunkPos.getMinBlockZ(); z <= chunkPos.getMaxBlockZ(); z++) {
                BlockPos p = new BlockPos(x, y, z);
                if (!this.isUnreachable(p) && !world.isOutsideBuildHeight(p)) {

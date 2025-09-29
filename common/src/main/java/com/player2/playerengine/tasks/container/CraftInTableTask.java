@@ -152,7 +152,7 @@ public class CraftInTableTask extends ResourceTask {
 
    @Override
    protected String toDebugStringName() {
-      return "Craft on table: " + Arrays.toString(Arrays.stream(this.targets).map(t -> t.getOutputItem().getDescription().getString()).toArray());
+      return "Craft on table: " + Arrays.toString(Arrays.stream(this.targets).map(t -> t.getOutputItem().getDescriptionId()).toArray());
    }
 
    public RecipeTarget[] getRecipeTargets() {

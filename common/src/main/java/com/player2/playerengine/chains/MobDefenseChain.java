@@ -31,11 +31,14 @@ import java.util.ConcurrentModificationException;
 import java.util.List;
 import java.util.Optional;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.boss.wither.WitherBoss;
 import net.minecraft.world.entity.monster.Blaze;
 import net.minecraft.world.entity.monster.CaveSpider;
@@ -61,12 +64,11 @@ import net.minecraft.world.entity.projectile.DragonFireball;
 import net.minecraft.world.entity.projectile.LargeFireball;
 import net.minecraft.world.entity.projectile.SmallFireball;
 import net.minecraft.world.entity.projectile.SpectralArrow;
-import net.minecraft.world.entity.projectile.ThrownPotion;
+import net.minecraft.world.entity.projectile.AbstractThrownPotion;
 import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.TieredItem;
 import net.minecraft.world.level.block.BaseFireBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.phys.Vec3;
@@ -140,7 +142,7 @@ public class MobDefenseChain extends SingleTaskChain {
       for (LivingEntity toDealWith : toDealWithList) {
          if (toDealWith instanceof EnderMan || toDealWith instanceof Slime || toDealWith instanceof Blaze) {
             numberOfProblematicEntities++;
-         } else if (toDealWith instanceof Drowned && toDealWith.getAllSlots() == Items.TRIDENT) {
+         } else if (toDealWith instanceof Drowned && (toDealWith.getItemBySlot(EquipmentSlot.MAINHAND).getItem() == Items.TRIDENT || toDealWith.getItemBySlot(EquipmentSlot.OFFHAND).getItem() == Items.TRIDENT)) {
             numberOfProblematicEntities += 5;
          }
       }
@@ -230,7 +232,7 @@ public class MobDefenseChain extends SingleTaskChain {
                if (blowingUp != null && blowingUp.distanceTo(mod.getEntity()) <= 16.0F) {
                   if (mod.getFoodChain().needsToEat() && !(mod.getPlayer().getHealth() < 9.0F)
                      || !hasShield(mod)
-                     || mod.getEntityTracker().entityFound(ThrownPotion.class)
+                     || mod.getEntityTracker().entityFound(AbstractThrownPotion.class)
                      || !mod.getBaritone().getPathingBehavior().isSafeToCancel()
                      || !(blowingUp.getSwelling(blowingUp.getSwellDir()) > 0.5)) {
                      this.doingFunkyStuff = true;
@@ -253,7 +255,7 @@ public class MobDefenseChain extends SingleTaskChain {
                   if (mod.getModSettings().isDodgeProjectiles()
                      && hasShield(mod)
                      && mod.getBaritone().getPathingBehavior().isSafeToCancel()
-                     && !mod.getEntityTracker().entityFound(ThrownPotion.class)
+                     && !mod.getEntityTracker().entityFound(AbstractThrownPotion.class)
                      && this.isProjectileClose(mod)) {
                      ItemStack shieldSlot = StorageHelper.getItemStackInSlot(new Slot(mod.getInventory().offHand, 0));
                      if (shieldSlot.getItem() != Items.SHIELD) {
@@ -341,9 +343,9 @@ public class MobDefenseChain extends SingleTaskChain {
 
                         toDealWithList.sort(Comparator.comparingDouble(entity -> mod.getPlayer().distanceTo(entity)));
                         if (!toDealWithList.isEmpty()) {
-                           TieredItem bestWeapon = getBestWeapon(mod);
+                           Item bestWeapon = getBestWeapon(mod);
                            int armor = mod.getPlayer().getArmorValue();
-                           float damage = bestWeapon == null ? 0.0F : bestWeapon.getTier().getAttackDamageBonus() + 1.0F;
+                           float damage = bestWeapon == null ? 0.0F : (float) bestWeapon.components().get(DataComponents.ATTRIBUTE_MODIFIERS).modifiers().stream().filter((f)->f.attribute()== Attributes.ATTACK_DAMAGE).findFirst().get().modifier().amount() + 1.0F;
                            int shield = hasShield(mod) && bestWeapon != null ? 3 : 0;
                            int canDealWith = (int)Math.ceil(armor * 3.6 / 20.0 + damage * 0.8 + shield);
                            if (canDealWith < getDangerousnessScore(toDealWithList) && !this.needsChangeOnAttack) {
@@ -399,7 +401,7 @@ public class MobDefenseChain extends SingleTaskChain {
       return mod.getItemStorage().hasItem(Items.SHIELD) || mod.getItemStorage().hasItemInOffhand(mod, Items.SHIELD);
    }
 
-   public static TieredItem getBestWeapon(PlayerEngineController mod) {
+   public static Item getBestWeapon(PlayerEngineController mod) {
       Item[] WEAPONS = new Item[]{
          Items.NETHERITE_SWORD,
          Items.NETHERITE_AXE,
@@ -414,11 +416,11 @@ public class MobDefenseChain extends SingleTaskChain {
          Items.WOODEN_SWORD,
          Items.WOODEN_AXE
       };
-      TieredItem bestSword = null;
+      Item bestSword = null;
 
       for (Item item : WEAPONS) {
          if (mod.getItemStorage().hasItem(item)) {
-            bestSword = (TieredItem)item;
+            bestSword = (Item)item;
             break;
          }
       }

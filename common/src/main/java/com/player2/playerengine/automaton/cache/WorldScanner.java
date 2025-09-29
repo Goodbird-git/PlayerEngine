@@ -170,7 +170,7 @@ public enum WorldScanner implements IWorldScanner {
             int y0 = coordinateIterationOrder[yIndex];
             LevelChunkSection section = chunkInternalStorageArray[y0];
             if (section != null && !section.hasOnlyAir() && section.maybeHas(filter::has)) {
-               int yReal = (y0 << 4) + chunk.getMinBuildHeight();
+               int yReal = (y0 << 4) + chunk.getMinY();
                PalettedContainer<BlockState> bsc = section.getStates();
 
                for (int yy = 0; yy < 16; yy++) {

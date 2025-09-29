@@ -1,27 +1,27 @@
 package com.player2.playerengine.multiversion;
 
-import net.minecraft.world.item.Tier;
-import net.minecraft.world.item.TieredItem;
-import net.minecraft.world.item.Tiers;
+import net.minecraft.core.HolderSet;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.Tool;
+import net.minecraft.world.level.block.Block;
 
 public class ToolMaterialVer {
-   public static int getMiningLevel(TieredItem item) {
-      return getMiningLevel(item.getTier());
+   public static HolderSet<Block> getMineableBlocks(Item item){
+      for(Tool.Rule rule : item.components().get(DataComponents.TOOL).rules()){
+         if(rule.correctForDrops().isPresent() && rule.correctForDrops().get()){
+            return rule.blocks();
+         }
+      }
+      return HolderSet.empty();
    }
 
-   public static int getMiningLevel(Tier material) {
-      if (material.equals(Tiers.WOOD) || material.equals(Tiers.GOLD)) {
-         return 0;
-      } else if (material.equals(Tiers.STONE)) {
-         return 1;
-      } else if (material.equals(Tiers.IRON)) {
-         return 2;
-      } else if (material.equals(Tiers.DIAMOND)) {
-         return 3;
-      } else if (material.equals(Tiers.NETHERITE)) {
-         return 4;
-      } else {
-         throw new IllegalStateException("Unexpected value: " + material);
-      }
+   public static HolderSet<Block> getMiningLevel(ItemStack item) {
+      return getMineableBlocks(item.getItem());
+   }
+
+   public static HolderSet<Block> getMiningLevel(Item material) {
+     return getMineableBlocks(material);
    }
 }

@@ -163,7 +163,7 @@ public class InteractWithBlockTask extends Task {
    private static Goal createGoalForInteract(BlockPos target, int reachDistance, Direction interactSide, Vec3i interactOffset, boolean walkInto) {
       boolean sideMatters = interactSide != null;
       if (sideMatters) {
-         Vec3i offs = interactSide.getNormal();
+         Vec3i offs = interactSide.getUnitVec3i();
          if (offs.getY() == -1) {
             offs = offs.below();
          }

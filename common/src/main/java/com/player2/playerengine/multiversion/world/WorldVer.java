@@ -17,11 +17,11 @@ public class WorldVer {
    }
 
    public static int getBottomY(Level world) {
-      return world.getMinBuildHeight();
+      return world.getMinY();
    }
 
    public static int getTopY(Level world) {
-      return world.getMaxBuildHeight();
+      return world.getMaxY();
    }
 
    private static boolean isOutOfHeightLimit(Level world, BlockPos pos) {

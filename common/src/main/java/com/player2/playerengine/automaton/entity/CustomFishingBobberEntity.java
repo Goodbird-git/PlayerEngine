@@ -86,7 +86,6 @@ public class CustomFishingBobberEntity extends ThrowableProjectile {
 
    public CustomFishingBobberEntity(EntityType<? extends CustomFishingBobberEntity> type, Level world, int luckOfTheSeaLevel, int lureLevel) {
       super(type, world);
-      this.noCulling = true;
       this.luckOfTheSeaLevel = Math.max(0, luckOfTheSeaLevel);
       this.lureLevel = Math.max(0, lureLevel);
    }
@@ -107,7 +106,7 @@ public class CustomFishingBobberEntity extends ThrowableProjectile {
       double d = thrower.getX() - i * 0.3;
       double e = thrower.getEyeY();
       double l = thrower.getZ() - h * 0.3;
-      this.moveTo(d, e, l, g, f);
+      this.moveOrInterpolateTo(new Vec3(d, e, l), g, f);
       Vec3 vec3d = new Vec3(-i, Mth.clamp(-(k / j), -5.0F, 5.0F), -h);
       double m = vec3d.length();
       vec3d = vec3d.multiply(
@@ -540,7 +539,7 @@ public class CustomFishingBobberEntity extends ThrowableProjectile {
       if (this.getPlayerOwner() == null) {
          int i = packet.getData();
          LOGGER.error("Failed to recreate fishing hook on client. {} (id: {}) is not a valid owner.", this.level().getEntity(i), i);
-         this.kill();
+         this.kill((ServerLevel) level());
       }
    }
 

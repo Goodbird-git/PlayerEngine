@@ -81,6 +81,7 @@ import java.util.stream.Stream;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Vec3i;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.tags.ItemTags;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -96,8 +97,6 @@ import net.minecraft.world.item.EnderEyeItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.SwordItem;
-import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -1067,7 +1066,7 @@ public class BeatMinecraftTask extends Task {
       if (this.mod.getPlayer().getMainHandItem().getItem() instanceof EnderEyeItem && !openingEndPortal) {
          for (ItemStack itemStack : itemStorage.getItemStacksPlayerInventory(true)) {
             Item item = itemStack.getItem();
-            if (item instanceof SwordItem || item instanceof AxeItem) {
+            if (itemStack.is(ItemTags.SWORDS) || item instanceof AxeItem) {
                this.mod.getSlotHandler().forceEquipItem(item);
             }
          }

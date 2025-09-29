@@ -14,9 +14,10 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Stream;
+
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.TieredItem;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 
@@ -43,7 +44,7 @@ public class DepositCommand extends Command {
             ItemStack stack = StorageHelper.getItemStackInSlot(slot);
             if (!stack.isEmpty()) {
                Item item = stack.getItem();
-               return !(item instanceof TieredItem);
+               return !(stack.has(DataComponents.TOOL));
             } else {
                return false;
             }

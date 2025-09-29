@@ -33,7 +33,7 @@ public class GoalBlockSide implements Goal {
 
    private double getDistanceInRightDirection(int x, int y, int z) {
       Vec3 delta = new Vec3(x, y, z).subtract(this.block.getX(), this.block.getY(), this.block.getZ());
-      Vec3i dir = this.direction.getNormal();
+      Vec3i dir = this.direction.getUnitVec3i();
       double dot = new Vec3(dir.getX(), dir.getY(), dir.getZ()).dot(delta);
       return dot - this.buffer;
    }

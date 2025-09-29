@@ -28,25 +28,31 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Map.Entry;
+
+import com.player2.playerengine.automaton.api.entity.LivingEntityInventory;
+import com.player2.playerengine.util.BlockPosUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtUtils;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 
 public class ContainerMemory implements IContainerMemory {
    private final Map<BlockPos, ContainerMemory.RememberedInventory> inventories = new HashMap<>();
 
-   public void read(HolderLookup.Provider levelRegistryAccess, CompoundTag tag) {
+   public void read(ValueInput input) {
       try {
-         ListTag nbtInventories = tag.getList("inventories", 10);
+         ValueInput.ValueInputList nbtInventories = input.childrenList("inventories").get();
 
-         for (int i = 0; i < nbtInventories.size(); i++) {
-            CompoundTag nbtEntry = nbtInventories.getCompound(i);
-            BlockPos pos = NbtUtils.readBlockPos(nbtEntry,"pos").get();
+         for (ValueInput nbtEntry : nbtInventories) {
+            BlockPos pos = BlockPosUtils.readBlockPos(nbtEntry,"pos").get();
             ContainerMemory.RememberedInventory rem = new ContainerMemory.RememberedInventory();
-            rem.fromNbt(levelRegistryAccess, nbtEntry.getList("content", 9));
+            rem.fromNbt(nbtEntry.list("content", ItemStack.CODEC).get());
             if (!rem.items.isEmpty()) {
                this.inventories.put(pos, rem);
             }
@@ -57,22 +63,17 @@ public class ContainerMemory implements IContainerMemory {
       }
    }
 
-   public CompoundTag toNbt(HolderLookup.Provider levelRegistryAccess) {
-      CompoundTag tag = new CompoundTag();
+   public void toNbt(ValueOutput output) {
       if (BaritoneAPI.getGlobalSettings().containerMemory.get()) {
-         ListTag list = new ListTag();
+         ValueOutput.ValueOutputList list = output.childrenList("inventories");
 
          for (Entry<BlockPos, ContainerMemory.RememberedInventory> entry : this.inventories.entrySet()) {
-            CompoundTag nbtEntry = new CompoundTag();
-            nbtEntry.put("pos", NbtUtils.writeBlockPos(entry.getKey()));
-            nbtEntry.put("content", entry.getValue().toNbt(levelRegistryAccess));
-            list.add(nbtEntry);
+            ValueOutput nbtEntry = list.addChild();
+            nbtEntry.putIntArray("pos", BlockPosUtils.writeBlockPos(entry.getKey()));
+
+           entry.getValue().toNbt(nbtEntry.list("content", ItemStack.CODEC));
          }
-
-         tag.put("inventories", list);
       }
-
-      return tag;
    }
 
    public synchronized void setup(BlockPos pos, int windowId, int slotCount) {
@@ -112,19 +113,15 @@ public class ContainerMemory implements IContainerMemory {
          return this.size;
       }
 
-      public ListTag toNbt(HolderLookup.Provider levelRegistryAccess) {
-         ListTag inv = new ListTag();
-
+      public void toNbt(ValueOutput.TypedOutputList<ItemStack> valueOutput) {
          for (ItemStack item : this.items) {
-            inv.add(item.save(levelRegistryAccess, new CompoundTag()));
+            valueOutput.add(item);
          }
-
-         return inv;
       }
 
-      public void fromNbt(HolderLookup.Provider levelRegistryAccess, ListTag content) {
-         for (int i = 0; i < content.size(); i++) {
-            this.items.add(ItemStack.parseOptional(levelRegistryAccess, content.getCompound(i)));
+      public void fromNbt(ValueInput.TypedInputList<ItemStack> content) {
+         for (ItemStack stack : content) {
+            this.items.add(stack);
          }
 
          this.size = this.items.size();

@@ -110,16 +110,16 @@ public class CharacterUtils {
    }
 
    public static Character readFromNBT(CompoundTag compound) {
-      String name = compound.getString("name");
-      String shortName = compound.getString("shortName");
-      String greetingInfo = compound.getString("greetingInfo");
-      String description = compound.getString("description");
-      String skinURL = compound.getString("skinURL");
-      ListTag voiceIdsList = compound.getList("voiceIds", 8);
+      String name = compound.getString("name").get();
+      String shortName = compound.getString("shortName").get();
+      String greetingInfo = compound.getString("greetingInfo").get();
+      String description = compound.getString("description").get();
+      String skinURL = compound.getString("skinURL").get();
+      ListTag voiceIdsList = compound.getList("voiceIds").get();
       String[] voiceIds = new String[voiceIdsList.size()];
 
       for (int i = 0; i < voiceIdsList.size(); i++) {
-         voiceIds[i] = voiceIdsList.getString(i);
+         voiceIds[i] = voiceIdsList.getString(i).get();
       }
 
       return new Character(name, shortName, greetingInfo, description, skinURL, voiceIds);

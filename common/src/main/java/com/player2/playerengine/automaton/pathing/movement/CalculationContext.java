@@ -130,8 +130,8 @@ public class CalculationContext {
       this.backtrackCostFavoringCoefficient = baritone.settings().backtrackCostFavoringCoefficient.get();
       this.jumpPenalty = baritone.settings().jumpPenalty.get();
       this.walkOnWaterOnePenalty = baritone.settings().walkOnWaterOnePenalty.get();
-      this.worldTop = this.world.getMaxBuildHeight();
-      this.worldBottom = this.world.getMinBuildHeight();
+      this.worldTop = this.world.getMaxY();
+      this.worldBottom = this.world.getMinY();
       EntityDimensions dimensions = entity.getDimensions(Pose.STANDING);
       this.width = Mth.ceil(dimensions.width());
       this.requiredSideSpace = getRequiredSideSpace(dimensions);

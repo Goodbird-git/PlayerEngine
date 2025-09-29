@@ -9,6 +9,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.stream.Collectors;
+
+import net.minecraft.client.gui.screens.inventory.StonecutterScreen;
+import net.minecraft.core.Holder;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.CustomRecipe;
@@ -85,15 +89,15 @@ public class CraftingRecipeTracker extends Tracker {
    protected void updateState() {
       if (this.shouldRebuild) {
          if (PlayerEngineController.inGame()) {
-            RecipeManagerWrapper recipeManager = RecipeManagerWrapper.of(this.mod.getWorld().getRecipeManager());
+            RecipeManagerWrapper recipeManager = RecipeManagerWrapper.of(this.mod.getWorld().recipeAccess());
 
             for (WrappedRecipeEntry recipe : recipeManager.values()) {
                Recipe<?> recipe1 = recipe.value();
                if (recipe1 instanceof CraftingRecipe) {
                   net.minecraft.world.item.crafting.CraftingRecipe craftingRecipe = (net.minecraft.world.item.crafting.CraftingRecipe)recipe1;
                   if (!(craftingRecipe instanceof CustomRecipe)) {
-                     ItemStack result = new ItemStack(craftingRecipe.getResultItem(null).getItem(), craftingRecipe.getResultItem(null).getCount());
-                     Item[][] altoclefRecipeItems = getShapedCraftingRecipe(craftingRecipe.getIngredients());
+                     ItemStack result = new ItemStack(craftingRecipe.assemble(null, null).getItem(), craftingRecipe.assemble(null, null).getCount());
+                     Item[][] altoclefRecipeItems = getShapedCraftingRecipe(craftingRecipe.placementInfo().ingredients());
                      CraftingRecipe altoclefRecipe = CraftingRecipe.newShapedRecipe(altoclefRecipeItems, result.getCount());
                      if (this.itemRecipeMap.containsKey(result.getItem())) {
                         this.itemRecipeMap.get(result.getItem()).add(altoclefRecipe);
@@ -119,19 +123,9 @@ public class CraftingRecipeTracker extends Tracker {
       int x = 0;
 
       for (Ingredient ingredient : ingredients) {
-         ItemStack[] stacks = ingredient.getItems();
-         Item[] items = new Item[stacks.length];
+         Item[] items = ingredient.items().map(Holder::value).distinct().toArray(Item[]::new);
 
-         for (int i = 0; i < stacks.length; i++) {
-            ItemStack stack = stacks[i];
-            if (stack.getCount() > 1) {
-               throw new IllegalStateException("recipe needs more then one item on a slot... well... shit (ingredients: " + ingredient + ")");
-            }
-
-            items[i] = stack.getItem();
-         }
-
-         if (stacks.length != 0) {
+         if (items.length != 0) {
             Item[] var10000 = new Item[]{items[0]};
             result[x] = new Item[1];
          } else {

@@ -9,7 +9,8 @@ import com.player2.playerengine.util.MiningRequirement;
 import com.player2.playerengine.util.helpers.ItemHelper;
 import java.util.Arrays;
 import java.util.HashSet;
-import net.minecraft.world.entity.animal.Sheep;
+
+import net.minecraft.world.entity.animal.sheep.Sheep;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;

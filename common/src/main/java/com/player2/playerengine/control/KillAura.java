@@ -23,13 +23,13 @@ import net.minecraft.world.entity.monster.Creeper;
 import net.minecraft.world.entity.monster.Zoglin;
 import net.minecraft.world.entity.monster.hoglin.Hoglin;
 import net.minecraft.world.entity.monster.warden.Warden;
+import net.minecraft.world.entity.projectile.AbstractThrownPotion;
 import net.minecraft.world.entity.projectile.LargeFireball;
-import net.minecraft.world.entity.projectile.ThrownPotion;
+import net.minecraft.world.entity.projectile.ThrownSplashPotion;
 import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.TieredItem;
 import net.minecraft.world.phys.Vec3;
 
 public class KillAura {
@@ -40,7 +40,7 @@ public class KillAura {
    public boolean attackedLastTick = false;
 
    public static void equipWeapon(PlayerEngineController mod) {
-      TieredItem toolItem = MobDefenseChain.getBestWeapon(mod);
+      Item toolItem = MobDefenseChain.getBestWeapon(mod);
       if (toolItem != null) {
          mod.getSlotHandler().forceEquipItem(toolItem);
       }
@@ -66,7 +66,7 @@ public class KillAura {
    public void tickEnd(PlayerEngineController mod) {
       Optional<Entity> entities = this.targets.stream().min(StlHelper.compareValues(entity -> entity.distanceToSqr(mod.getPlayer())));
       if (entities.isPresent()
-         && !mod.getEntityTracker().entityFound(ThrownPotion.class)
+         && !mod.getEntityTracker().entityFound(AbstractThrownPotion.class)
          && (
             Double.isInfinite(this.forceFieldRange)
                || entities.get().distanceToSqr(mod.getPlayer()) < this.forceFieldRange * this.forceFieldRange

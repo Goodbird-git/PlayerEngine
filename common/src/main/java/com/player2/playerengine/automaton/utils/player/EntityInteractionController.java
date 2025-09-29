@@ -52,7 +52,7 @@ public class EntityInteractionController implements IInteractionController {
          if (progress >= 10) {
             this.getInteractionManager()
                .processBlockBreakingAction(
-                  interactionManager.getMiningPos(), Action.STOP_DESTROY_BLOCK, side, this.player.level().getMaxBuildHeight(), this.sequence++
+                  interactionManager.getMiningPos(), Action.STOP_DESTROY_BLOCK, side, this.player.level().getMaxY(), this.sequence++
                );
          }
 
@@ -68,7 +68,7 @@ public class EntityInteractionController implements IInteractionController {
       if (interactionManager.isMining()) {
          this.getInteractionManager()
             .processBlockBreakingAction(
-               interactionManager.getMiningPos(), Action.ABORT_DESTROY_BLOCK, Direction.UP, this.player.level().getMaxBuildHeight(), this.sequence++
+               interactionManager.getMiningPos(), Action.ABORT_DESTROY_BLOCK, Direction.UP, this.player.level().getMaxY(), this.sequence++
             );
       }
    }
@@ -95,7 +95,7 @@ public class EntityInteractionController implements IInteractionController {
          return false;
       } else {
          this.getInteractionManager()
-            .processBlockBreakingAction(loc, Action.START_DESTROY_BLOCK, face, this.player.level().getMaxBuildHeight(), this.sequence++);
+            .processBlockBreakingAction(loc, Action.START_DESTROY_BLOCK, face, this.player.level().getMaxY(), this.sequence++);
          return this.getInteractionManager().isMining() || this.player.level().isEmptyBlock(loc);
       }
    }

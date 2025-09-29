@@ -48,7 +48,7 @@ public final class BlockStateInterfaceAccessWrapper implements BlockGetter {
       return this.bsi.world.getHeight();
    }
 
-   public int getMinBuildHeight() {
-      return this.bsi.world.getMinBuildHeight();
+   public int getMinY() {
+      return this.bsi.world.getMinY();
    }
 }

@@ -9,6 +9,8 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.Item;
@@ -18,6 +20,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.LeavesBlock;
 import net.minecraft.world.level.block.entity.AbstractFurnaceBlockEntity;
+import net.minecraft.world.level.block.entity.FuelValues;
 import net.minecraft.world.level.material.MapColor;
 
 public class ItemHelper {
@@ -1173,7 +1176,7 @@ public class ItemHelper {
    };
    public static final Item[] RAW_FOODS = cookableFoodMap.keySet().toArray(Item[]::new);
    public static final Item[] COOKED_FOODS = cookableFoodMap.values().toArray(Item[]::new);
-   private static Map<Item, Integer> fuelTimeMap = null;
+   private static FuelValues fuelTimeMap = null;
 
    public static String stripItemName(Item item) {
       String[] possibilities = new String[]{"item.minecraft.", "block.minecraft."};
@@ -1296,20 +1299,20 @@ public class ItemHelper {
          : to.getItem().equals(from.getItem()) && from.getCount() + to.getCount() < to.getMaxStackSize();
    }
 
-   private static Map<Item, Integer> getFuelTimeMap() {
+   private static FuelValues getFuelTimeMap(ServerLevel level) {
       if (fuelTimeMap == null) {
-         fuelTimeMap = AbstractFurnaceBlockEntity.getFuel();
+         fuelTimeMap = level.fuelValues();
       }
 
       return fuelTimeMap;
    }
 
-   public static double getFuelAmount(Item... items) {
+   public static double getFuelAmount(ServerLevel level, Item... items) {
       double total = 0.0;
 
       for (Item item : items) {
-         if (getFuelTimeMap().containsKey(item)) {
-            int timeTicks = getFuelTimeMap().get(item);
+         if (getFuelTimeMap(level).isFuel(new ItemStack(item))) {
+            int timeTicks = getFuelTimeMap(level).burnDuration(new ItemStack(item));
             total += timeTicks / 200.0;
          }
       }
@@ -1317,12 +1320,12 @@ public class ItemHelper {
       return total;
    }
 
-   public static double getFuelAmount(ItemStack stack) {
-      return getFuelAmount(stack.getItem()) * stack.getCount();
+   public static double getFuelAmount(ServerLevel level, ItemStack stack) {
+      return getFuelAmount(level, stack.getItem()) * stack.getCount();
    }
 
-   public static boolean isFuel(Item item) {
-      return getFuelTimeMap().containsKey(item);
+   public static boolean isFuel(ServerLevel level, Item item) {
+      return getFuelTimeMap(level).isFuel(new ItemStack(item));
    }
 
    public boolean isRawFood(Item item) {

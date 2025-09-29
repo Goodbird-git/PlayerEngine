@@ -27,6 +27,8 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 
 public class WorldData implements IWorldData {
    private final WaypointCollection waypoints = new WaypointCollection();
@@ -37,14 +39,14 @@ public class WorldData implements IWorldData {
       this.dimension = dimension;
    }
 
-   public void readFromNbt(HolderLookup.Provider levelRegistryAccess, CompoundTag tag) {
-      this.containerMemory.read(levelRegistryAccess, tag.getCompound("containers"));
-      this.waypoints.readFromNbt(tag.getCompound("waypoints"));
+   public void readFromNbt(ValueInput input) {
+      this.containerMemory.read(input.childOrEmpty("containers"));
+      this.waypoints.readFromNBT(input.childOrEmpty("waypoints"));
    }
 
-   public void writeToNbt(HolderLookup.Provider levelRegistryAccess, CompoundTag tag) {
-      tag.put("containers", this.containerMemory.toNbt(levelRegistryAccess));
-      tag.put("waypoints", this.waypoints.toNbt());
+   public void writeToNbt(ValueOutput output) {
+      this.containerMemory.toNbt(output.child("containers"));
+      this.waypoints.writeToNBT(output.child("waypoints"));
    }
 
    @Override

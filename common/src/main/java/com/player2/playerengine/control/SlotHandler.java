@@ -10,9 +10,9 @@ import com.player2.playerengine.automaton.api.entity.LivingEntityInventory;
 import java.util.Arrays;
 import java.util.function.Predicate;
 import net.minecraft.core.NonNullList;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.inventory.ClickType;
-import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.BucketItem;
 import net.minecraft.world.item.EmptyMapItem;
 import net.minecraft.world.item.EnderEyeItem;
@@ -24,7 +24,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.PotionItem;
 import net.minecraft.world.item.SpawnEggItem;
-import net.minecraft.world.item.TieredItem;
 
 public class SlotHandler {
    private final PlayerEngineController controller;
@@ -75,7 +74,7 @@ public class SlotHandler {
          }
       } else {
          if (!this.cursorStack.isEmpty()) {
-            this.controller.getEntity().spawnAtLocation(this.cursorStack.copy());
+            this.controller.getEntity().spawnAtLocation(this.controller.getWorld(), this.cursorStack.copy());
             this.setCursorStack(ItemStack.EMPTY);
             this.registerSlotAction();
          }
@@ -178,7 +177,7 @@ public class SlotHandler {
    }
 
    public boolean forceDeequipHitTool() {
-      return this.forceDeequip(stack -> stack.getItem() instanceof TieredItem);
+      return this.forceDeequip(stack -> stack.has(DataComponents.TOOL));
    }
 
    public boolean forceEquipItem(ItemTarget toEquip, boolean unInterruptable) {
@@ -225,7 +224,7 @@ public class SlotHandler {
                || item instanceof FoodOnAStickItem
                || item == Items.COMPASS
                || item instanceof EmptyMapItem
-               || item instanceof ArmorItem
+               || item.components().has(DataComponents.EQUIPPABLE)
                || item == Items.LEAD
                || item == Items.SHIELD;
          }
@@ -248,8 +247,8 @@ public class SlotHandler {
       LivingEntityInventory inventory = ((IInventoryProvider)controller.getEntity()).getLivingInventory();
 
       for (Item item : target.getMatches()) {
-         if (item instanceof ArmorItem armorItem) {
-            EquipmentSlot slotType = armorItem.getType().getSlot();
+         if (item.components().has(DataComponents.EQUIPPABLE)) {
+            EquipmentSlot slotType = item.components().get(DataComponents.EQUIPPABLE).slot();
             if (!controller.getEntity().getItemBySlot(slotType).is(item)) {
                for (int i = 0; i < inventory.getContainerSize(); i++) {
                   ItemStack stackInSlot = inventory.getItem(i);

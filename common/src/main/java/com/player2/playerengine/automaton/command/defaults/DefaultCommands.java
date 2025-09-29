@@ -118,8 +118,8 @@ public final class DefaultCommands {
                component.setStyle(
                   component.getStyle()
                      .applyFormat(ChatFormatting.WHITE)
-                     .withHoverEvent(new HoverEvent(Action.SHOW_TEXT, Component.literal("Click to rerun command")))
-                     .withClickEvent(new ClickEvent(net.minecraft.network.chat.ClickEvent.Action.RUN_COMMAND, "/automatone " + msg))
+                     .withHoverEvent(new HoverEvent.ShowText(Component.literal("Click to rerun command")))
+                     .withClickEvent(new ClickEvent.RunCommand("/automatone " + msg))
                );
                return component;
             },

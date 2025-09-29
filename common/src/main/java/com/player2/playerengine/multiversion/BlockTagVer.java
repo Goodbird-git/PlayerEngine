@@ -8,7 +8,7 @@ public class BlockTagVer {
    public static boolean isWool(Block block) {
       return BuiltInRegistries.BLOCK
          .getResourceKey(block)
-         .map(e -> BuiltInRegistries.BLOCK.getHolderOrThrow(e).tags().anyMatch(t -> t == BlockTags.WOOL))
+         .map(e -> BuiltInRegistries.BLOCK.get(e).get().tags().anyMatch(t -> t == BlockTags.WOOL))
          .orElse(Boolean.FALSE);
    }
 }

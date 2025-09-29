@@ -19,8 +19,9 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Predicate;
+
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -40,8 +41,8 @@ public class StorageHelper {
 
    public static boolean isArmorEquipped(PlayerEngineController controller, Item... any) {
       for (Item item : any) {
-         if (item instanceof ArmorItem armor) {
-            ItemStack equippedStack = controller.getEntity().getItemBySlot(armor.getType().getSlot());
+         if (item.components().has(DataComponents.EQUIPPABLE)) {
+            ItemStack equippedStack = controller.getEntity().getItemBySlot(item.components().get(DataComponents.EQUIPPABLE).slot());
             if (equippedStack.is(item)) {
                return true;
             }
@@ -221,7 +222,7 @@ public class StorageHelper {
 
       for (ItemStack stack : controller.getItemStorage().getItemStacksPlayerInventory(true)) {
          if (controller.getModSettings().isSupportedFuel(stack.getItem())) {
-            result += ItemHelper.getFuelAmount(stack.getItem()) * stack.getCount();
+            result += ItemHelper.getFuelAmount(controller.getWorld(), stack.getItem()) * stack.getCount();
          }
       }
 

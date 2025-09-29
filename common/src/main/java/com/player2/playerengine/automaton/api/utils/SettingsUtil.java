@@ -126,7 +126,7 @@ public class SettingsUtil {
       ),
       BLOCK(Block.class, str -> BlockUtils.stringToBlockRequired(str.trim()), BlockUtils::blockToString),
       ITEM(
-         Item.class, str -> (Item)BuiltInRegistries.ITEM.get(ResourceLocation.tryParse(str.trim())), item -> BuiltInRegistries.ITEM.getResourceKey(item).toString()
+         Item.class, str -> (Item)BuiltInRegistries.ITEM.get(ResourceLocation.tryParse(str.trim())).get().value(), item -> BuiltInRegistries.ITEM.getResourceKey(item).toString()
       ),
       TAG {
          @Override

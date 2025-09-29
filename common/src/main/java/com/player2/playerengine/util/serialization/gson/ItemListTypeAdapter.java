@@ -42,7 +42,7 @@ public class ItemListTypeAdapter extends TypeAdapter<List<Item>> {
             itemKey = ItemHelper.trimItemName(itemKey);
             ResourceLocation identifier = ResourceLocation.tryParse(itemKey);
             if (BuiltInRegistries.ITEM.containsKey(identifier)) {
-                result.add(BuiltInRegistries.ITEM.get(identifier));
+                result.add(BuiltInRegistries.ITEM.get(identifier).get().value());
             } else {
                 Debug.logWarning("Invalid item name: " + itemKey);
             }

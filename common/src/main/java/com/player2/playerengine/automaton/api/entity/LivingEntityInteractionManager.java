@@ -31,7 +31,6 @@ import net.minecraft.tags.FluidTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.effect.MobEffectUtil;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -239,8 +238,8 @@ public class LivingEntityInteractionManager {
          f *= 1.0F + (MobEffectUtil.getDigSpeedAmplification(entity) + 1) * 0.2F;
       }
 
-      if (entity.hasEffect(MobEffects.DIG_SLOWDOWN)) {
-         f *= switch (entity.getEffect(MobEffects.DIG_SLOWDOWN).getAmplifier()) {
+      if (entity.hasEffect(MobEffects.MINING_FATIGUE)) {
+         f *= switch (entity.getEffect(MobEffects.MINING_FATIGUE).getAmplifier()) {
             case 0 -> 0.3F;
             case 1 -> 0.09F;
             case 2 -> 0.0027F;
@@ -305,35 +304,30 @@ public class LivingEntityInteractionManager {
          int j = stack.getDamageValue();
 
          try {
-            InteractionResultHolder<ItemStack> typedActionResult;
+            InteractionResult typedActionResult;
             if (stack.getItem() instanceof BucketItem bucketItem) {
                typedActionResult = this.useBucket(bucketItem, world, player, hand);
             } else {
                typedActionResult = stack.use(world, null, hand);
             }
 
-            ItemStack itemStack = (ItemStack)typedActionResult.getObject();
-            if (itemStack == stack && itemStack.getCount() == i && itemStack.getUseDuration(player) <= 0 && itemStack.getDamageValue() == j) {
-               return typedActionResult.getResult();
-            } else if (typedActionResult.getResult() == InteractionResult.FAIL && itemStack.getUseDuration(player) > 0 && !player.isUsingItem()) {
-               return typedActionResult.getResult();
+             if (stack.getCount() == i && stack.getUseDuration(player) <= 0 && stack.getDamageValue() == j) {
+               return typedActionResult;
+            } else if (typedActionResult == InteractionResult.FAIL && stack.getUseDuration(player) > 0 && !player.isUsingItem()) {
+               return typedActionResult;
             } else {
-               if (stack != itemStack) {
-                  player.setItemInHand(hand, itemStack);
-               }
-
-               if (this.isCreative() && itemStack != ItemStack.EMPTY) {
-                  itemStack.setCount(i);
-                  if (itemStack.isDamageableItem() && itemStack.getDamageValue() != j) {
-                     itemStack.setDamageValue(j);
+                 if (this.isCreative() && stack != ItemStack.EMPTY) {
+                  stack.setCount(i);
+                  if (stack.isDamageableItem() && stack.getDamageValue() != j) {
+                     stack.setDamageValue(j);
                   }
                }
 
-               if (itemStack.isEmpty()) {
+               if (stack.isEmpty()) {
                   player.setItemInHand(hand, ItemStack.EMPTY);
                }
 
-               return typedActionResult.getResult();
+               return typedActionResult;
             }
          } catch (Exception var10) {
             return InteractionResult.PASS;
@@ -341,13 +335,13 @@ public class LivingEntityInteractionManager {
       }
    }
 
-   public InteractionResultHolder<ItemStack> useBucket(BucketItem bucket, Level world, LivingEntity user, InteractionHand hand) {
+   public InteractionResult useBucket(BucketItem bucket, Level world, LivingEntity user, InteractionHand hand) {
       ItemStack itemStack = user.getItemInHand(hand);
       BlockHitResult blockHitResult = raycast(world, user, ((IBucketAccessor)bucket).getFluid() == Fluids.EMPTY ? Fluid.SOURCE_ONLY : Fluid.NONE);
       if (blockHitResult.getType() == Type.MISS) {
-         return InteractionResultHolder.pass(itemStack);
+         return InteractionResult.PASS;
       } else if (blockHitResult.getType() != Type.BLOCK) {
-         return InteractionResultHolder.pass(itemStack);
+         return InteractionResult.PASS;
       } else {
          BlockPos blockPos = blockHitResult.getBlockPos();
          Direction direction = blockHitResult.getDirection();
@@ -361,11 +355,11 @@ public class LivingEntityInteractionManager {
                   fluidDrainable.getPickupSound().ifPresent(sound -> user.playSound(sound, 1.0F, 1.0F));
                   world.gameEvent(user, GameEvent.FLUID_PICKUP, blockPos);
                   ItemStack itemStack3 = exchangeStack(itemStack, user, itemStack2);
-                  return InteractionResultHolder.sidedSuccess(itemStack3, world.isClientSide());
+                  return InteractionResult.SUCCESS;
                }
             }
 
-            return InteractionResultHolder.fail(itemStack);
+            return InteractionResult.FAIL;
          } else {
             BlockState blockState = world.getBlockState(blockPos);
             BlockPos blockPos3 = blockState.getBlock() instanceof LiquidBlockContainer && ((IBucketAccessor)bucket).getFluid() == Fluids.WATER
@@ -373,9 +367,9 @@ public class LivingEntityInteractionManager {
                : blockPos2;
             if (bucket.emptyContents(null, world, blockPos3, blockHitResult)) {
                bucket.checkExtraContent(null, world, itemStack, blockPos3);
-               return InteractionResultHolder.sidedSuccess(new ItemStack(Items.BUCKET), world.isClientSide());
+               return InteractionResult.SUCCESS;
             } else {
-               return InteractionResultHolder.fail(itemStack);
+               return InteractionResult.FAIL;
             }
          }
       }
@@ -408,7 +402,7 @@ public class LivingEntityInteractionManager {
          return outputStack;
       } else {
          if (!((IInventoryProvider)player).getLivingInventory().insertStack(outputStack)) {
-            player.spawnAtLocation(outputStack);
+            player.spawnAtLocation((ServerLevel) player.level(), outputStack);
          }
 
          return inputStack;
@@ -430,7 +424,7 @@ public class LivingEntityInteractionManager {
          ItemStack itemStack = stack.copy();
          if (!bl2) {
             try {
-               InteractionResult actionResult = blockState.useItemOn(stack, world, null, hand, hitResult).result();
+               InteractionResult actionResult = blockState.useItemOn(stack, world, null, hand, hitResult);
                if (actionResult.consumesAction()) {
                   return actionResult;
                }

@@ -149,7 +149,7 @@ public interface WorldHelper {
    static int getGroundHeight(PlayerEngineController controller, int x, int z) {
       Level world = controller.getWorld();
 
-      for (int y = world.getMaxBuildHeight(); y >= world.getMinBuildHeight(); y--) {
+      for (int y = world.getMaxY(); y >= world.getMinY(); y--) {
          BlockPos check = new BlockPos(x, y, z);
          if (isSolidBlock(controller, check)) {
             return y;
@@ -183,7 +183,7 @@ public interface WorldHelper {
       Level world = controller.getWorld();
       Set<Block> possibleBlocks = new HashSet<>(Arrays.asList(groundBlocks));
 
-      for (int y = world.getMaxBuildHeight(); y >= world.getMinBuildHeight(); y--) {
+      for (int y = world.getMaxY(); y >= world.getMinY(); y--) {
          BlockPos check = new BlockPos(x, y, z);
          if (possibleBlocks.contains(world.getBlockState(check).getBlock())) {
             return y;

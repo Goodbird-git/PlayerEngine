@@ -40,7 +40,7 @@ public enum DefaultSchematicFormats implements ISchematicFormat {
       @Override
       public IStaticSchematic parse(InputStream input) throws IOException {
          CompoundTag nbt = NbtIo.readCompressed(input, NbtAccounter.unlimitedHeap());
-         int version = nbt.getInt("Version");
+         int version = nbt.getInt("Version").get();
          switch (version) {
             case 1:
             case 2:

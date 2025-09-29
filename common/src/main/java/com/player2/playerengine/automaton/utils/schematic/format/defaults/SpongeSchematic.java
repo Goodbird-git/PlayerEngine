@@ -35,15 +35,15 @@ import net.minecraft.world.level.block.state.properties.Property;
 
 public final class SpongeSchematic extends StaticSchematic {
    public SpongeSchematic(CompoundTag nbt) {
-      this.x = nbt.getInt("Width");
-      this.y = nbt.getInt("Height");
-      this.z = nbt.getInt("Length");
+      this.x = nbt.getInt("Width").get();
+      this.y = nbt.getInt("Height").get();
+      this.z = nbt.getInt("Length").get();
       this.states = new BlockState[this.x][this.z][this.y];
       Int2ObjectArrayMap<BlockState> palette = new Int2ObjectArrayMap();
-      CompoundTag paletteTag = nbt.getCompound("Palette");
+      CompoundTag paletteTag = nbt.getCompound("Palette").get();
 
-      for (String tag : paletteTag.getAllKeys()) {
-         int index = paletteTag.getInt(tag);
+      for (String tag : paletteTag.keySet()) {
+         int index = paletteTag.getInt(tag).get();
          SpongeSchematic.SerializedBlockState serializedState = SpongeSchematic.SerializedBlockState.getFromString(tag);
          if (serializedState == null) {
             throw new IllegalArgumentException("Unable to parse palette tag");
@@ -57,7 +57,7 @@ public final class SpongeSchematic extends StaticSchematic {
          palette.put(index, state);
       }
 
-      byte[] rawBlockData = nbt.getByteArray("BlockData");
+      byte[] rawBlockData = nbt.getByteArray("BlockData").get();
       int[] blockData = new int[this.x * this.y * this.z];
       int offset = 0;
 
@@ -99,7 +99,7 @@ public final class SpongeSchematic extends StaticSchematic {
 
       private BlockState deserialize() {
          if (this.blockState == null) {
-            Block block = (Block)BuiltInRegistries.BLOCK.get(this.resourceLocation);
+            Block block = (Block)BuiltInRegistries.BLOCK.get(this.resourceLocation).get().value();
             this.blockState = block.defaultBlockState();
             this.properties.keySet().stream().sorted(String::compareTo).forEachOrdered(key -> {
                Property<?> property = block.getStateDefinition().getProperty(key);

@@ -24,13 +24,11 @@ import java.util.Map;
 import java.util.function.Function;
 
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.tags.ItemTags;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.SwordItem;
-import net.minecraft.world.item.TieredItem;
-import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
@@ -58,7 +56,7 @@ public class ToolSet {
    }
 
    private int getMaterialCost(ItemStack itemStack) {
-      return itemStack.getItem() instanceof TieredItem ? 1 : -1;
+      return itemStack.has(DataComponents.TOOL) ? 1 : -1;
    }
 
    public boolean hasSilkTouch(ItemStack stack) {
@@ -83,7 +81,7 @@ public class ToolSet {
 
          for (int i = 0; i < 9; i++) {
             ItemStack itemStack = ((IInventoryProvider)this.player).getLivingInventory().getItem(i);
-            if ((this.baritone.settings().useSwordToMine.get() || !(itemStack.getItem() instanceof SwordItem))
+            if ((this.baritone.settings().useSwordToMine.get() || !(itemStack.is(ItemTags.SWORDS)))
                && (!this.baritone.settings().itemSaver.get() || itemStack.getDamageValue() < itemStack.getMaxDamage() || itemStack.getMaxDamage() <= 1)) {
                double speed = calculateSpeedVsBlock(itemStack, blockState);
                boolean silkTouch = this.hasSilkTouch(itemStack);
@@ -137,12 +135,12 @@ public class ToolSet {
 
    private double potionAmplifier() {
       double speed = 1.0;
-      MobEffectInstance hasteEffect = this.player.getEffect(MobEffects.DIG_SPEED);
+      MobEffectInstance hasteEffect = this.player.getEffect(MobEffects.HASTE);
       if (hasteEffect != null) {
          speed *= 1.0 + (hasteEffect.getAmplifier() + 1) * 0.2;
       }
 
-      MobEffectInstance fatigueEffect = this.player.getEffect(MobEffects.DIG_SLOWDOWN);
+      MobEffectInstance fatigueEffect = this.player.getEffect(MobEffects.MINING_FATIGUE);
       if (fatigueEffect != null) {
          switch (fatigueEffect.getAmplifier()) {
             case 0:

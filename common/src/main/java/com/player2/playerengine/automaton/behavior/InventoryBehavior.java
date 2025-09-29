@@ -27,14 +27,13 @@ import java.util.Random;
 import java.util.function.Predicate;
 import net.minecraft.core.Direction;
 import net.minecraft.core.NonNullList;
+import net.minecraft.tags.ItemTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.PickaxeItem;
-import net.minecraft.world.item.TieredItem;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.block.Block;
@@ -56,7 +55,7 @@ public final class InventoryBehavior extends Behavior {
                this.swapWithHotBar(this.firstValidThrowaway(player.getLivingInventory()), 8, player.getLivingInventory());
             }
 
-            int pick = this.bestToolAgainst(Blocks.STONE, PickaxeItem.class);
+            int pick = this.bestToolAgainst(Blocks.STONE, ItemTags.PICKAXES);
             if (pick >= 9) {
                for (int i = 0; i < 9; i++) {
                   if (player.getLivingInventory().getItem(i).getItem() != Items.BUCKET) {
@@ -119,7 +118,7 @@ public final class InventoryBehavior extends Behavior {
       return -1;
    }
 
-   private int bestToolAgainst(Block against, Class<? extends TieredItem> cla$$) {
+   private int bestToolAgainst(Block against, TagKey<Item> cla$$) {
       NonNullList<ItemStack> invy = this.ctx.inventory().main;
       int bestInd = -1;
       double bestSpeed = -1.0;
@@ -128,7 +127,7 @@ public final class InventoryBehavior extends Behavior {
          ItemStack stack = (ItemStack)invy.get(i);
          if (!stack.isEmpty()
             && (!this.baritone.settings().itemSaver.get() || stack.getDamageValue() < stack.getMaxDamage() || stack.getMaxDamage() <= 1)
-            && cla$$.isInstance(stack.getItem())) {
+            && stack.is(cla$$)) {
             double speed = ToolSet.calculateSpeedVsBlock(stack, against.defaultBlockState());
             if (speed > bestSpeed) {
                bestSpeed = speed;
@@ -204,7 +203,7 @@ public final class InventoryBehavior extends Behavior {
          if (desired.test((ItemStack)p.getLivingInventory().offHand.get(0))) {
             for (int ix = 0; ix < 9; ix++) {
                ItemStack item = (ItemStack)var7.get(ix);
-               if (item.isEmpty() || item.getItem() instanceof PickaxeItem) {
+               if (item.isEmpty() || item.is(ItemTags.PICKAXES)) {
                   if (select) {
                      p.getLivingInventory().selectedSlot = ix;
                   }

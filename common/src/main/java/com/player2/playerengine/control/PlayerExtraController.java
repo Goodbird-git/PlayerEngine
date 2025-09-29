@@ -5,6 +5,7 @@ import com.player2.playerengine.eventbus.EventBus;
 import com.player2.playerengine.eventbus.events.BlockBreakingCancelEvent;
 import com.player2.playerengine.eventbus.events.BlockBreakingEvent;
 import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
 
@@ -40,7 +41,7 @@ public class PlayerExtraController {
 
    public void attack(Entity entity) {
       if (this.inRange(entity)) {
-         this.mod.getPlayer().doHurtTarget(entity);
+         this.mod.getPlayer().doHurtTarget((ServerLevel) entity.level(), entity);
          this.mod.getPlayer().swing(InteractionHand.MAIN_HAND);
       }
    }

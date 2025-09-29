@@ -27,7 +27,7 @@ import net.minecraft.world.entity.animal.Chicken;
 import net.minecraft.world.entity.animal.Cow;
 import net.minecraft.world.entity.animal.Pig;
 import net.minecraft.world.entity.animal.Rabbit;
-import net.minecraft.world.entity.animal.Sheep;
+import net.minecraft.world.entity.animal.sheep.Sheep;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -105,7 +105,7 @@ public class CollectFoodTask extends Task {
 
             for (Item item : ITEMS_TO_PICK_UP) {
                if (this.controller.getEntityTracker().itemDropped(item)) {
-                  this.setDebugState("Picking up high-value food: " + item.getDescription().getString());
+                  this.setDebugState("Picking up high-value food: " + item.getDescriptionId());
                   this.currentResourceTask = new PickupDroppedItemTask(new ItemTarget(item), true);
                   return this.currentResourceTask;
                }
@@ -126,7 +126,7 @@ public class CollectFoodTask extends Task {
             } else {
                for (CollectFoodTask.CropTarget crop : CROPS) {
                   if (this.controller.getBlockScanner().anyFound(pos -> isCropMature(this.controller, pos, crop.cropBlock), crop.cropBlock)) {
-                     this.setDebugState("Harvesting " + crop.cropItem.getDescription().getString());
+                     this.setDebugState("Harvesting " + crop.cropItem.getDescriptionId());
                      this.currentResourceTask = new CollectCropTask(new ItemTarget(crop.cropItem, 9999), new Block[]{crop.cropBlock}, crop.cropItem);
                      return this.currentResourceTask;
                   }

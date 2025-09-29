@@ -19,7 +19,7 @@ public class WorldBlockModifiedMixin {
    }
 
    @Inject(
-      method = {"onBlockStateChange"},
+      method = {"updatePOIOnBlockStateChange"},
       at = {@At("HEAD")}
    )
    public void onBlockWasChanged(BlockPos pos, BlockState oldBlock, BlockState newBlock, CallbackInfo ci) {

@@ -90,7 +90,7 @@ public final class BetterBlockPos extends BlockPos {
    }
 
    public BetterBlockPos offset(Direction dir) {
-      Vec3i vec = dir.getNormal();
+      Vec3i vec = dir.getUnitVec3i();
       return new BetterBlockPos(this.x + vec.getX(), this.y + vec.getY(), this.z + vec.getZ());
    }
 
@@ -98,7 +98,7 @@ public final class BetterBlockPos extends BlockPos {
       if (dist == 0) {
          return this;
       } else {
-         Vec3i vec = dir.getNormal();
+         Vec3i vec = dir.getUnitVec3i();
          return new BetterBlockPos(this.x + vec.getX() * dist, this.y + vec.getY() * dist, this.z + vec.getZ() * dist);
       }
    }

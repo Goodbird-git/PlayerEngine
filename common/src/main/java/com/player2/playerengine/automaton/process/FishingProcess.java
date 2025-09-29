@@ -33,6 +33,7 @@ import java.util.Optional;
 import java.util.stream.StreamSupport;
 
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.EquipmentSlot;
 import org.jetbrains.annotations.Nullable;
 import net.minecraft.core.BlockPos;
@@ -41,7 +42,6 @@ import net.minecraft.core.Direction.Plane;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.FishingRodItem;
 import net.minecraft.world.item.ItemStack;
@@ -267,7 +267,7 @@ public final class FishingProcess extends BaritoneProcessHelper implements IBari
          .orElse(null);
    }
 
-   public InteractionResultHolder<ItemStack> useFishingRod(Level world, LivingEntity user, InteractionHand hand) {
+   public InteractionResult useFishingRod(Level world, LivingEntity user, InteractionHand hand) {
       ItemStack itemStack = user.getItemInHand(hand);
       CustomFishingBobberEntity bobber = this.findOurBobber();
       if (bobber != null) {
@@ -307,7 +307,7 @@ public final class FishingProcess extends BaritoneProcessHelper implements IBari
          user.gameEvent(GameEvent.ITEM_INTERACT_START);
       }
 
-      return InteractionResultHolder.sidedSuccess(itemStack, world.isClientSide());
+      return InteractionResult.SUCCESS;
    }
 
    private static enum State {

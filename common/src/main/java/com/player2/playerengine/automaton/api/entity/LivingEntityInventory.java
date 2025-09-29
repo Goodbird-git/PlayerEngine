@@ -29,21 +29,26 @@ import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.DamageTypeTags;
+import net.minecraft.tags.ItemTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.Container;
 import net.minecraft.world.ContainerHelper;
+import net.minecraft.world.ItemStackWithSlot;
 import net.minecraft.world.Nameable;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.EquipmentSlot.Type;
+import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.player.StackedContents;
-import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 
 public class LivingEntityInventory implements Container, Nameable {
    public static final int ITEM_USAGE_COOLDOWN = 5;
@@ -243,7 +248,7 @@ public class LivingEntityInventory implements Container, Nameable {
       for (NonNullList<ItemStack> defaultedList : this.combinedInventory) {
          for (int i = 0; i < defaultedList.size(); i++) {
             if (!((ItemStack)defaultedList.get(i)).isEmpty()) {
-               ((ItemStack)defaultedList.get(i)).inventoryTick(this.player.level(), this.player, i, this.selectedSlot == i);
+               ((ItemStack)defaultedList.get(i)).inventoryTick(this.player.level(), this.player, null);
             }
          }
       }
@@ -362,13 +367,12 @@ public class LivingEntityInventory implements Container, Nameable {
       return ((ItemStack)this.main.get(this.selectedSlot)).getDestroySpeed(block);
    }
 
-   public ListTag writeNbt(HolderLookup.Provider levelRegistryAccess, ListTag nbtList) {
+   public void writeNbt(ValueOutput.TypedOutputList<ItemStackWithSlot> output) {
       for (int i = 0; i < this.main.size(); i++) {
          if (!((ItemStack)this.main.get(i)).isEmpty()) {
             CompoundTag nbtCompound = new CompoundTag();
             nbtCompound.putByte("Slot", (byte)i);
-            ((ItemStack)this.main.get(i)).save(levelRegistryAccess, nbtCompound);
-            nbtList.add(nbtCompound);
+            output.add(new ItemStackWithSlot(i, (ItemStack)this.main.get(i)));
          }
       }
 
@@ -376,8 +380,7 @@ public class LivingEntityInventory implements Container, Nameable {
          if (!((ItemStack)this.armor.get(ix)).isEmpty()) {
             CompoundTag nbtCompound = new CompoundTag();
             nbtCompound.putByte("Slot", (byte)(ix + 100));
-            ((ItemStack)this.armor.get(ix)).save(levelRegistryAccess, nbtCompound);
-            nbtList.add(nbtCompound);
+            output.add(new ItemStackWithSlot(ix, (ItemStack)this.armor.get(ix)));
          }
       }
 
@@ -385,23 +388,20 @@ public class LivingEntityInventory implements Container, Nameable {
          if (!((ItemStack)this.offHand.get(ixx)).isEmpty()) {
             CompoundTag nbtCompound = new CompoundTag();
             nbtCompound.putByte("Slot", (byte)(ixx + 150));
-            ((ItemStack)this.offHand.get(ixx)).save(levelRegistryAccess, nbtCompound);
-            nbtList.add(nbtCompound);
+            output.add(new ItemStackWithSlot(ixx, (ItemStack)this.offHand.get(ixx)));
          }
       }
 
-      return nbtList;
    }
 
-   public void readNbt(HolderLookup.Provider levelRegistryAccess, ListTag nbtList) {
+   public void readNbt(ValueInput.TypedInputList<ItemStackWithSlot> input) {
       this.main.clear();
       this.armor.clear();
       this.offHand.clear();
 
-      for (int i = 0; i < nbtList.size(); i++) {
-         CompoundTag nbtCompound = nbtList.getCompound(i);
-         int j = nbtCompound.getByte("Slot") & 255;
-         ItemStack itemStack = ItemStack.parseOptional(levelRegistryAccess, nbtCompound);
+      for(ItemStackWithSlot itemStackWithSlot : input) {
+         ItemStack itemStack = itemStackWithSlot.stack();
+         int j = itemStackWithSlot.slot();
          if (!itemStack.isEmpty()) {
             if (j >= 0 && j < this.main.size()) {
                this.main.set(j, itemStack);
@@ -472,7 +472,7 @@ public class LivingEntityInventory implements Container, Nameable {
 
          for (int i : slots) {
             ItemStack itemStack = (ItemStack)this.armor.get(i);
-            if ((!damageSource.is(DamageTypeTags.IS_FIRE) || !itemStack.getItem().components().has(DataComponents.FIRE_RESISTANT)) && itemStack.getItem() instanceof ArmorItem) {
+            if ((!damageSource.is(DamageTypeTags.IS_FIRE) || !itemStack.getItem().components().has(DataComponents.DAMAGE_RESISTANT)) && itemStack.is(ItemTags.ARMOR_ENCHANTABLE)) {
                itemStack.hurtAndBreak((int)amount, this.player, player.getEquipmentSlotForItem(itemStack));
             }
          }
@@ -484,7 +484,7 @@ public class LivingEntityInventory implements Container, Nameable {
          for (int i = 0; i < list.size(); i++) {
             ItemStack itemStack = list.get(i);
             if (!itemStack.isEmpty()) {
-               this.player.spawnAtLocation(itemStack);
+               this.player.spawnAtLocation((ServerLevel) this.player.level(), itemStack);
                list.set(i, ItemStack.EMPTY);
             }
          }
@@ -538,12 +538,6 @@ public class LivingEntityInventory implements Container, Nameable {
    public void clearContent() {
       for (List<ItemStack> list : this.combinedInventory) {
          list.clear();
-      }
-   }
-
-   public void populateRecipeFinder(StackedContents finder) {
-      for (ItemStack itemStack : this.main) {
-         finder.accountSimpleStack(itemStack);
       }
    }
 

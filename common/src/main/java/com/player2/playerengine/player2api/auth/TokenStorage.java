@@ -23,7 +23,7 @@ public class TokenStorage {
     }
 
     static String getToken(String username, String clientId) {
-        return getInstance().tokensStored.getString(getInstance().makeKey(username, clientId));
+        return getInstance().tokensStored.getString(getInstance().makeKey(username, clientId)).get();
     }
 
     static void storeToken(String username, String clientId, String token) {

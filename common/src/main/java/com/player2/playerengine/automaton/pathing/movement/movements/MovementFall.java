@@ -141,7 +141,7 @@ public class MovementFall extends Movement {
             state.setInput(Input.MOVE_FORWARD, true);
          }
 
-         Vec3i avoid = Optional.ofNullable(this.avoid()).<Vec3i>map(Direction::getNormal).orElse(null);
+         Vec3i avoid = Optional.ofNullable(this.avoid()).<Vec3i>map(Direction::getUnitVec3i).orElse(null);
          if (avoid == null) {
             avoid = this.src.subtract(this.dest);
          } else {

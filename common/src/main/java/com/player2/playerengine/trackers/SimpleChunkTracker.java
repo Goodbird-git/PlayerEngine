@@ -50,8 +50,8 @@ public class SimpleChunkTracker {
       if (!this.isChunkLoaded(chunk)) {
          return false;
       } else {
-         int bottomY = this.mod.getWorld().getMinBuildHeight();
-         int topY = this.mod.getWorld().getMaxBuildHeight();
+         int bottomY = this.mod.getWorld().getMinY();
+         int topY = this.mod.getWorld().getMaxY();
 
          for (int xx = chunk.getMinBlockX(); xx <= chunk.getMaxBlockX(); xx++) {
             for (int yy = bottomY; yy <= topY; yy++) {

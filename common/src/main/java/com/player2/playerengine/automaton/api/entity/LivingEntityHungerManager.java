@@ -57,7 +57,7 @@ public class LivingEntityHungerManager {
          }
       }
 
-      boolean bl = player.level().getGameRules().getBoolean(GameRules.RULE_NATURAL_REGENERATION);
+      boolean bl = player.level().getServer().getGameRules().getBoolean(GameRules.RULE_NATURAL_REGENERATION);
       if (bl && this.foodSaturationLevel > 0.0F && this.canFoodHeal(player) && this.foodLevel >= 20) {
          this.foodTickTimer++;
          if (this.foodTickTimer >= 10) {
@@ -88,11 +88,11 @@ public class LivingEntityHungerManager {
    }
 
    public void readNbt(CompoundTag nbt) {
-      if (nbt.contains("foodLevel", 99)) {
-         this.foodLevel = nbt.getInt("foodLevel");
-         this.foodTickTimer = nbt.getInt("foodTickTimer");
-         this.foodSaturationLevel = nbt.getFloat("foodSaturationLevel");
-         this.exhaustion = nbt.getFloat("foodExhaustionLevel");
+      if (nbt.contains("foodLevel")) {
+         this.foodLevel = nbt.getInt("foodLevel").get();
+         this.foodTickTimer = nbt.getInt("foodTickTimer").get();
+         this.foodSaturationLevel = nbt.getFloat("foodSaturationLevel").get();
+         this.exhaustion = nbt.getFloat("foodExhaustionLevel").get();
       }
    }
 

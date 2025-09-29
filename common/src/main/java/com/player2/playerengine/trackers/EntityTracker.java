@@ -3,7 +3,6 @@ package com.player2.playerengine.trackers;
 import com.player2.playerengine.util.Debug;
 import com.player2.playerengine.eventbus.EventBus;
 import com.player2.playerengine.eventbus.events.PlayerCollidedWithEntityEvent;
-import com.player2.playerengine.mixins.PersistentProjectileEntityAccessor;
 import com.player2.playerengine.trackers.blacklisting.EntityLocateBlacklist;
 import com.player2.playerengine.util.ItemTarget;
 import com.player2.playerengine.util.baritone.CachedProjectile;
@@ -351,8 +350,8 @@ public class EntityTracker extends Tracker {
                      if (!this.mod.getBehaviour().shouldAvoidDodgingProjectile(entity)) {
                         CachedProjectile proj = new CachedProjectile();
                         boolean inGround = false;
-                        if (entity instanceof AbstractArrow) {
-                           inGround = ((PersistentProjectileEntityAccessor)entity).isInGround();
+                        if (entity instanceof AbstractArrow arrow) {
+                           inGround = arrow.onGround();
                         }
 
                         if (!(projEntity instanceof FishingHook)

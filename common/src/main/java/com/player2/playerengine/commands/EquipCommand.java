@@ -9,7 +9,7 @@ import com.player2.playerengine.commands.base.ItemList;
 import com.player2.playerengine.tasks.misc.EquipArmorTask;
 import com.player2.playerengine.util.ItemTarget;
 import com.player2.playerengine.util.helpers.ItemHelper;
-import net.minecraft.world.item.ArmorItem;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.item.Item;
 
 public class EquipCommand extends Command {
@@ -47,7 +47,7 @@ public class EquipCommand extends Command {
 
       for (ItemTarget target : items) {
          for (Item item : target.getMatches()) {
-            if (!(item instanceof ArmorItem)) {
+            if (!(item.components().has(DataComponents.EQUIPPABLE))) {
                throw new CommandException("'" + item.toString().toUpperCase() + "' cannot be equipped!");
             }
          }

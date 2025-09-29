@@ -15,12 +15,13 @@ import java.util.UUID;
 import java.util.Map.Entry;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction.Axis;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.tags.ItemTags;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ShieldItem;
 
@@ -128,20 +129,20 @@ public class StatusUtils {
       ItemStack feet = player.getItemBySlot(EquipmentSlot.FEET);
       ItemStack offhand = player.getItemBySlot(EquipmentSlot.OFFHAND);
       status.add("helmet",
-            !head.isEmpty() && head.getItem() instanceof ArmorItem
+            !head.isEmpty() && head.is(ItemTags.ARMOR_ENCHANTABLE)
                   ? head.getItem().getDescriptionId().replace("item.minecraft.", "")
                   : "none");
       status.add(
             "chestplate",
-            !chest.isEmpty() && chest.getItem() instanceof ArmorItem
+            !chest.isEmpty() && chest.is(ItemTags.ARMOR_ENCHANTABLE)
                   ? chest.getItem().getDescriptionId().replace("item.minecraft.", "")
                   : "none");
       status.add("leggings",
-            !legs.isEmpty() && legs.getItem() instanceof ArmorItem
+            !legs.isEmpty() && legs.is(ItemTags.ARMOR_ENCHANTABLE)
                   ? legs.getItem().getDescriptionId().replace("item.minecraft.", "")
                   : "none");
       status.add("boots",
-            !feet.isEmpty() && feet.getItem() instanceof ArmorItem
+            !feet.isEmpty() && feet.is(ItemTags.ARMOR_ENCHANTABLE)
                   ? feet.getItem().getDescriptionId().replace("item.minecraft.", "")
                   : "none");
       status.add(
@@ -204,7 +205,7 @@ public class StatusUtils {
 
    public static String getTimeString(PlayerEngineController mod) {
       ObjectStatus status = new ObjectStatus();
-      status.add("isDay", Boolean.toString(mod.getWorld().isDay()));
+      status.add("isDay", Boolean.toString(!mod.getWorld().isDarkOutside()));
       status.add("timeOfDay", String.format("%d/24,000", mod.getWorld().getDayTime() % 24000L));
       return status.toString();
    }

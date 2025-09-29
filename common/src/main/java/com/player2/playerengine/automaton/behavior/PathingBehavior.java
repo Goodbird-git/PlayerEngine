@@ -164,9 +164,6 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior 
                      this.logDebug("All done. At " + this.goal);
                      this.queuePathEvent(PathEvent.AT_GOAL);
                      this.next = null;
-                     if (this.baritone.settings().disconnectOnArrival.get()) {
-                        this.ctx.world().disconnect();
-                     }
                   }
                } else if (this.safeToCancel && this.next != null && this.next.snipsnapifpossible()) {
                   this.logDebug("Splicing into planned next path early...");

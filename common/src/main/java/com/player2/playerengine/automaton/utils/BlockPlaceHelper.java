@@ -49,7 +49,7 @@ public class BlockPlaceHelper {
             for (InteractionHand hand : InteractionHand.values()) {
                InteractionResult actionResult = this.ctx.playerController().processRightClickBlock(player, this.ctx.world(), hand, (BlockHitResult)mouseOver);
                if (actionResult.consumesAction()) {
-                  if (actionResult.shouldSwing()) {
+                  if (!actionResult.consumesAction()) {
                      player.swing(hand);
                   }
 

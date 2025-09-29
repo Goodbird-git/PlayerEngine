@@ -32,7 +32,7 @@ public interface LookHelper {
       if (side == null) {
          reachableRotation = RotationUtils.reachable(context.entity(), target, context.playerController().getBlockReachDistance());
       } else {
-         Vec3i sideVector = side.getNormal();
+         Vec3i sideVector = side.getUnitVec3i();
          Vec3 centerOffset = new Vec3(0.5 + sideVector.getX() * 0.5, 0.5 + sideVector.getY() * 0.5, 0.5 + sideVector.getZ() * 0.5);
          Vec3 sidePoint = centerOffset.add(target.getX(), target.getY(), target.getZ());
          reachableRotation = RotationUtils.reachableOffset(context.entity(), target, sidePoint, context.playerController().getBlockReachDistance(), false);
@@ -234,9 +234,9 @@ public interface LookHelper {
       double centerY = toLook.getY() + 0.5;
       double centerZ = toLook.getZ() + 0.5;
       if (side != null) {
-         double offsetX = side.getNormal().getX() * 0.5;
-         double offsetY = side.getNormal().getY() * 0.5;
-         double offsetZ = side.getNormal().getZ() * 0.5;
+         double offsetX = side.getUnitVec3i().getX() * 0.5;
+         double offsetY = side.getUnitVec3i().getY() * 0.5;
+         double offsetZ = side.getUnitVec3i().getZ() * 0.5;
          centerX += offsetX;
          centerY += offsetY;
          centerZ += offsetZ;
@@ -251,9 +251,9 @@ public interface LookHelper {
       double centerY = toLook.getY() + 0.5;
       double centerZ = toLook.getZ() + 0.5;
       if (side != null) {
-         double offsetX = side.getNormal().getX() * 0.5;
-         double offsetY = side.getNormal().getY() * 0.5;
-         double offsetZ = side.getNormal().getZ() * 0.5;
+         double offsetX = side.getUnitVec3i().getX() * 0.5;
+         double offsetY = side.getUnitVec3i().getY() * 0.5;
+         double offsetZ = side.getUnitVec3i().getZ() * 0.5;
          centerX += offsetX;
          centerY += offsetY;
          centerZ += offsetZ;

@@ -26,6 +26,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.regex.MatchResult;
 import java.util.regex.Matcher;
@@ -121,14 +122,14 @@ public final class BlockOptionalMeta {
       return drops.computeIfAbsent(
          b,
          block -> {
-            ResourceKey<LootTable> lootTableLocation = block.getLootTable();
-            if (lootTableLocation == BuiltInLootTables.EMPTY) {
+            Optional<ResourceKey<LootTable>> lootTableLocation = block.getLootTable();
+            if (lootTableLocation.isEmpty()) {
                return Collections.emptyList();
             } else {
                List<Item> items = new ArrayList<>();
                world.getServer()
                   .reloadableRegistries()
-                  .getLootTable(lootTableLocation)
+                  .getLootTable(lootTableLocation.get())
                   .getRandomItems(
                      new Builder(
                            new net.minecraft.world.level.storage.loot.LootParams.Builder(world)

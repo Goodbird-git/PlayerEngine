@@ -78,8 +78,8 @@ public class Paginator<E> {
       if (hasPrevPage) {
          prevPageComponent.setStyle(
             prevPageComponent.getStyle()
-               .withClickEvent(new ClickEvent(Action.RUN_COMMAND, String.format("%s %d", commandPrefix, this.page - 1)))
-               .withHoverEvent(new HoverEvent(net.minecraft.network.chat.HoverEvent.Action.SHOW_TEXT, Component.literal("Click to view previous page")))
+               .withClickEvent(new ClickEvent.RunCommand(String.format("%s %d", commandPrefix, this.page - 1)))
+               .withHoverEvent(new HoverEvent.ShowText(Component.literal("Click to view previous page")))
          );
       } else {
          prevPageComponent.setStyle(prevPageComponent.getStyle().applyFormat(ChatFormatting.DARK_GRAY));
@@ -89,8 +89,8 @@ public class Paginator<E> {
       if (hasNextPage) {
          nextPageComponent.setStyle(
             nextPageComponent.getStyle()
-               .withClickEvent(new ClickEvent(Action.RUN_COMMAND, String.format("%s %d", commandPrefix, this.page + 1)))
-               .withHoverEvent(new HoverEvent(net.minecraft.network.chat.HoverEvent.Action.SHOW_TEXT, Component.literal("Click to view next page")))
+               .withClickEvent(new ClickEvent.RunCommand(String.format("%s %d", commandPrefix, this.page + 1)))
+               .withHoverEvent(new HoverEvent.ShowText(Component.literal("Click to view next page")))
          );
       } else {
          nextPageComponent.setStyle(nextPageComponent.getStyle().applyFormat(ChatFormatting.DARK_GRAY));

@@ -179,7 +179,7 @@ public class LocateStrongholdCoordinatesTask extends Task {
       if (blockPos != null) {
          EyeOfEnder eyeOfEnderEntity = new EyeOfEnder(world, user.getX(), user.getY(0.5), user.getZ());
          eyeOfEnderEntity.setItem(user.getMainHandItem());
-         eyeOfEnderEntity.signalTo(blockPos);
+         eyeOfEnderEntity.signalTo(blockPos.getCenter());
          world.gameEvent(GameEvent.PROJECTILE_SHOOT, eyeOfEnderEntity.position(), Context.of(user));
          world.addFreshEntity(eyeOfEnderEntity);
          world.playSound(

@@ -167,7 +167,7 @@ public class ProjectileProtectionWallTask extends Task implements ITaskRequiresG
          .getEntityContext()
          .playerController()
          .processRightClickBlock(this.mod.getPlayer(), this.mod.getWorld(), hand, blockHitResult);
-      if (result.shouldSwing()) {
+      if (!result.consumesAction()) {
          this.mod.getPlayer().swing(hand);
       }
 

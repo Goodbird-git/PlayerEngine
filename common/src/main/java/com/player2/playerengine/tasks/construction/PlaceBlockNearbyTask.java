@@ -141,7 +141,7 @@ public class PlaceBlockNearbyTask extends Task {
          BlockPos bpos = bhit.getBlockPos();
          IEntityContext ctx = mod.getBaritone().getEntityContext();
          if (MovementHelper.canPlaceAgainst(ctx, bpos)) {
-            BlockPos placePos = bhit.getBlockPos().offset(bhit.getDirection().getNormal());
+            BlockPos placePos = bhit.getBlockPos().offset(bhit.getDirection().getUnitVec3i());
             if (WorldHelper.isInsidePlayer(this.controller, placePos)) {
                return null;
             }

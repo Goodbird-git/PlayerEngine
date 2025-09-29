@@ -8,6 +8,7 @@ import net.minecraft.world.damagesource.CombatRules;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -45,8 +46,8 @@ public class EntityHelper {
    }
 
    public static boolean isTradingPiglin(Entity entity) {
-      if (entity instanceof Piglin pig && pig.getHandSlots() != null) {
-         for (ItemStack stack : pig.getHandSlots()) {
+      if (entity instanceof Piglin pig) {
+         for (ItemStack stack : new ItemStack[]{pig.getItemBySlot(EquipmentSlot.MAINHAND), pig.getItemBySlot(EquipmentSlot.OFFHAND)}) {
             if (stack.getItem().equals(Items.GOLD_INGOT)) {
                return true;
             }
@@ -58,7 +59,7 @@ public class EntityHelper {
 
    public static double calculateResultingPlayerDamage(LivingEntity player, DamageSource src, double damageAmount) {
       DamageSourceWrapper source = DamageSourceWrapper.of(src);
-      if (player.isInvulnerableTo(src)) {
+      if (player.isInvulnerableTo((ServerLevel) player.level(), src)) {
          return 0.0;
       } else {
          if (!source.bypassesArmor()) {
@@ -68,8 +69,8 @@ public class EntityHelper {
          }
 
          if (!source.bypassesShield()) {
-            if (player.hasEffect(MobEffects.DAMAGE_RESISTANCE) && source.isOutOfWorld()) {
-               float k = (player.getEffect(MobEffects.DAMAGE_RESISTANCE).getAmplifier() + 1) * 5;
+            if (player.hasEffect(MobEffects.ABSORPTION) && source.isOutOfWorld()) {
+               float k = (player.getEffect(MobEffects.ABSORPTION).getAmplifier() + 1) * 5;
                float j = 25.0F - k;
                double f = damageAmount * j;
                damageAmount = Math.max(f / 25.0, 0.0);
