@@ -2,7 +2,7 @@ package com.player2.playerengine;
 
 import com.player2.playerengine.automaton.AdditionalBaritoneSettings;
 import com.player2.playerengine.chains.FoodChain;
-import com.player2.playerengine.chains.ForceEquipArmorChain;
+import com.player2.playerengine.chains.ForceEquipShieldArmorChain;
 import com.player2.playerengine.chains.MLGBucketFallChain;
 import com.player2.playerengine.chains.MobDefenseChain;
 import com.player2.playerengine.chains.PlayerDefenseChain;
@@ -65,7 +65,7 @@ public class PlayerEngineController {
    private BotBehaviour botBehaviour;
    private UserTaskChain userTaskChain;
    private FoodChain foodChain;
-   private ForceEquipArmorChain forceEquipArmorChain;
+   private ForceEquipShieldArmorChain ForceEquipShieldArmorChain;
    private MobDefenseChain mobDefenseChain;
    private MLGBucketFallChain mlgBucketChain;
    private ItemStorageTracker storageTracker;
@@ -100,7 +100,7 @@ public class PlayerEngineController {
       new PreEquipItemChain(this.taskRunner);
       new WorldSurvivalChain(this.taskRunner);
       this.foodChain = new FoodChain(this.taskRunner);
-      this.forceEquipArmorChain = new ForceEquipArmorChain(this.taskRunner);
+      this.ForceEquipShieldArmorChain = new ForceEquipShieldArmorChain(this.taskRunner);
       new PlayerDefenseChain(this.taskRunner);
       this.storageTracker = new ItemStorageTracker(this, this.trackerManager,
             container -> this.containerSubTracker = container);

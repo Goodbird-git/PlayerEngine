@@ -11,6 +11,7 @@ import java.util.Arrays;
 import java.util.function.Predicate;
 import net.minecraft.core.NonNullList;
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.BucketItem;
@@ -57,7 +58,7 @@ public class SlotHandler {
          if (inventory == null) {
             Debug.logWarning("Attempt to click a slot without an inventory: " + slot);
          } else {
-            ItemStack slotStack = (ItemStack)inventory.get(index);
+            ItemStack slotStack = (ItemStack) inventory.get(index);
             switch (type) {
                case PICKUP:
                   ItemStack temp = this.cursorStack;
@@ -83,23 +84,24 @@ public class SlotHandler {
    }
 
    public void forceEquipItemToOffhand(Item toEquip) {
-      LivingEntityInventory inventory = ((IInventoryProvider)this.controller.getEntity()).getLivingInventory();
-      ItemStack offhandStack = inventory.getItem(0);
-      if (!offhandStack.is(toEquip)) {
-         for (int i = 0; i < inventory.main.size(); i++) {
-            ItemStack potential = (ItemStack)inventory.main.get(i);
-            if (potential.is(toEquip)) {
-               inventory.setItem(0, potential);
-               inventory.main.set(i, offhandStack);
-               this.registerSlotAction();
-               return;
-            }
+      LivingEntity entity = this.controller.getEntity();
+      ItemStack offhand = entity.getItemBySlot(EquipmentSlot.OFFHAND);
+
+      LivingEntityInventory inv = ((IInventoryProvider) this.controller.getEntity()).getLivingInventory();
+      for (int i = 0; i < inv.main.size(); i++) {
+         ItemStack potential = inv.main.get(i);
+         if (!potential.isEmpty() && potential.is(toEquip)) {
+            inv.main.set(i, offhand);
+            entity.setItemSlot(EquipmentSlot.OFFHAND, potential);
+
+            this.registerSlotAction();
+            return;
          }
       }
    }
 
    public boolean forceEquipItem(Item[] toEquip) {
-      LivingEntityInventory inventory = ((IInventoryProvider)this.controller.getEntity()).getLivingInventory();
+      LivingEntityInventory inventory = ((IInventoryProvider) this.controller.getEntity()).getLivingInventory();
       if (Arrays.stream(toEquip).allMatch(ix -> ix == inventory.getMainHandStack().getItem())) {
          return true;
       } else {
@@ -128,7 +130,7 @@ public class SlotHandler {
    }
 
    public boolean forceEquipItem(Item toEquip) {
-      LivingEntityInventory inventory = ((IInventoryProvider)this.controller.getEntity()).getLivingInventory();
+      LivingEntityInventory inventory = ((IInventoryProvider) this.controller.getEntity()).getLivingInventory();
       if (inventory.getMainHandStack().is(toEquip)) {
          return true;
       } else {
@@ -155,7 +157,7 @@ public class SlotHandler {
    }
 
    public boolean forceDeequip(Predicate<ItemStack> isBad) {
-      LivingEntityInventory inventory = ((IInventoryProvider)this.controller.getEntity()).getLivingInventory();
+      LivingEntityInventory inventory = ((IInventoryProvider) this.controller.getEntity()).getLivingInventory();
       ItemStack equip = inventory.getMainHandStack();
       if (isBad.test(equip)) {
          int emptySlot = inventory.getEmptySlot();
@@ -204,32 +206,31 @@ public class SlotHandler {
 
    public void forceDeequipRightClickableItem() {
       this.forceDeequip(
-         stack -> {
-            Item item = stack.getItem();
-            return item instanceof BucketItem
-               || item instanceof EnderEyeItem
-               || item == Items.BOW
-               || item == Items.CROSSBOW
-               || item == Items.FLINT_AND_STEEL
-               || item == Items.FIRE_CHARGE
-               || item == Items.ENDER_PEARL
-               || item instanceof FireworkRocketItem
-               || item instanceof SpawnEggItem
-               || item == Items.END_CRYSTAL
-               || item == Items.EXPERIENCE_BOTTLE
-               || item instanceof PotionItem
-               || item == Items.TRIDENT
-               || item == Items.WRITABLE_BOOK
-               || item == Items.WRITTEN_BOOK
-               || item instanceof FishingRodItem
-               || item instanceof FoodOnAStickItem
-               || item == Items.COMPASS
-               || item instanceof EmptyMapItem
-               || item instanceof ArmorItem
-               || item == Items.LEAD
-               || item == Items.SHIELD;
-         }
-      );
+            stack -> {
+               Item item = stack.getItem();
+               return item instanceof BucketItem
+                     || item instanceof EnderEyeItem
+                     || item == Items.BOW
+                     || item == Items.CROSSBOW
+                     || item == Items.FLINT_AND_STEEL
+                     || item == Items.FIRE_CHARGE
+                     || item == Items.ENDER_PEARL
+                     || item instanceof FireworkRocketItem
+                     || item instanceof SpawnEggItem
+                     || item == Items.END_CRYSTAL
+                     || item == Items.EXPERIENCE_BOTTLE
+                     || item instanceof PotionItem
+                     || item == Items.TRIDENT
+                     || item == Items.WRITABLE_BOOK
+                     || item == Items.WRITTEN_BOOK
+                     || item instanceof FishingRodItem
+                     || item instanceof FoodOnAStickItem
+                     || item == Items.COMPASS
+                     || item instanceof EmptyMapItem
+                     || item instanceof ArmorItem
+                     || item == Items.LEAD
+                     || item == Items.SHIELD;
+            });
    }
 
    private void swapSlots(Slot slot, Slot target) {
@@ -245,7 +246,7 @@ public class SlotHandler {
    }
 
    public void forceEquipArmor(PlayerEngineController controller, ItemTarget target) {
-      LivingEntityInventory inventory = ((IInventoryProvider)controller.getEntity()).getLivingInventory();
+      LivingEntityInventory inventory = ((IInventoryProvider) controller.getEntity()).getLivingInventory();
 
       for (Item item : target.getMatches()) {
          if (item instanceof ArmorItem armorItem) {

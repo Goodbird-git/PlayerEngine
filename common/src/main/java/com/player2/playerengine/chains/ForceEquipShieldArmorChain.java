@@ -11,10 +11,12 @@ import com.player2.playerengine.tasks.base.TaskRunner;
 import com.player2.playerengine.util.ItemTarget;
 import com.player2.playerengine.PlayerEngineController;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.Items;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-public class ForceEquipArmorChain extends SingleTaskChain {
+public class ForceEquipShieldArmorChain extends SingleTaskChain {
     private ItemTarget[] toEquip = new ItemTarget[0];
     public static final Logger LOGGER = LogManager.getLogger();
 
@@ -51,18 +53,24 @@ public class ForceEquipArmorChain extends SingleTaskChain {
         return upgrades.toArray(new ItemTarget[0]);
     }
 
-    public ForceEquipArmorChain(TaskRunner runner) {
+    private boolean shouldEquipShield(PlayerEngineController controller) {
+        return !(StorageHelper.isItemInOffhand(controller, Items.SHIELD))
+                && controller.getItemStorage().hasItem(ItemTarget.of(Items.SHIELD));
+    }
+
+    public ForceEquipShieldArmorChain(TaskRunner runner) {
         super(runner);
     }
 
     @Override
     public float getPriority() {
-        LOGGER.info("getPriority force armor chain");
         this.toEquip = computeBetterArmorToEquip(this.controller);
         if (this.toEquip.length > 0) {
-            LOGGER.info("Better armor, equipping");
             this.setTask(new EquipArmorTask(this.toEquip));
             return 100.0f;
+        }
+        if (shouldEquipShield(this.controller)) {
+            this.controller.getSlotHandler().forceEquipItemToOffhand(Items.SHIELD);
         }
         return 0.0f;
     }
@@ -73,7 +81,7 @@ public class ForceEquipArmorChain extends SingleTaskChain {
 
     @Override
     public String getName() {
-        return "ForceEquipArmorChain";
+        return "ForceEquipShieldArmorChain";
     }
 
     @Override
