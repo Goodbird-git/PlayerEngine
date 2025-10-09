@@ -14,7 +14,8 @@ import net.minecraft.world.item.Item;
 
 public class EquipCommand extends Command {
    public EquipCommand() throws CommandException {
-      super("equip", "Equips items. Example; `equip iron_chestplate` equips an iron chestplate.", new Arg<>(ItemList.class, "[equippable_items]"));
+      super("equip", "Equips items. Example; `equip iron_chestplate` equips an iron chestplate.",
+            new Arg<>(ItemList.class, "[equippable_items]"));
    }
 
    @Override
@@ -37,6 +38,9 @@ public class EquipCommand extends Command {
                break;
             case "netherite":
                items = ItemTarget.of(ItemHelper.NETHERITE_ARMORS);
+               break;
+            case "chainmail":
+               items = ItemTarget.of(ItemHelper.CHAINMAIL_ARMORS);
                break;
             default:
                items = parser.get(ItemList.class).items;

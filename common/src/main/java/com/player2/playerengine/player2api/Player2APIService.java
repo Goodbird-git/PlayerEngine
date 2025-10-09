@@ -43,9 +43,10 @@ public class Player2APIService {
             .toString();
 
       requestBody.add("messages", messagesArray);
-      LOGGER.info("Called complete conversation (string) HTTP request, last msg={}", lastMessageForDebug);
+      LOGGER.info("Called complete conversation HTTP request, last msg={}", lastMessageForDebug);
       Map<String, JsonElement> responseMap = Player2HTTPUtils.sendRequest(controller.getOwner(), clientId,
             "/v1/chat/completions", true, requestBody);
+      responseMap.forEach((k, v) -> LOGGER.info("RESPONSE: key={}, value={}", k, v));
       if (responseMap.containsKey("choices")) {
          JsonArray choices = responseMap.get("choices").getAsJsonArray();
          if (choices.size() != 0) {
@@ -80,7 +81,7 @@ public class Player2APIService {
          if (choices.size() != 0) {
             JsonObject messageObject = choices.get(0).getAsJsonObject().getAsJsonObject("message");
             if (messageObject != null && messageObject.has("content")) {
-               LOGGER.info("Finished complete conversation HTTP request last msg={}", lastMessageForDebug);
+               LOGGER.info("Finished complete conversation HTTP (string) request last msg={}", lastMessageForDebug);
                return messageObject.get("content").getAsString();
             }
          }
@@ -102,7 +103,7 @@ public class Player2APIService {
             buf.writeUtf(id);
          }
 
-         ((ServerPlayer)controller.getOwner()).connection.send(NetworkManager.toPacket(NetworkManager.Side.S2C,
+         ((ServerPlayer) controller.getOwner()).connection.send(NetworkManager.toPacket(NetworkManager.Side.S2C,
                new ResourceLocation("playerengine", "stream_tts"), buf));
          onFinish.accept(null);
       } catch (Exception var9) {

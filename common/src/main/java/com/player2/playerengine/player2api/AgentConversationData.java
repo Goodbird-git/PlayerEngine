@@ -140,14 +140,14 @@ public class AgentConversationData {
 
     private Optional<String> getReminderStringFromLastEvent(Event lastEvent) {
         if (lastEvent instanceof Event.UserMessage) {
-            return Optional.of(((Event.UserMessage) lastEvent).userName().equals(getMod().getOwnerUsername())
+            return Optional.of((((Event.UserMessage) lastEvent).userName().equals(getMod().getOwnerUsername())
                     ? Prompts.reminderOnOwnerMsg
-                    : Prompts.reminderOnOtherUSerMsg);
+                    : Prompts.reminderOnOtherUSerMsg) + " " + Prompts.generalConversationReminder);
         }
         if (lastEvent instanceof Event.CharacterMessage) {
-            return Optional.of(Prompts.reminderOnAIMsg);
+            return Optional.of(Prompts.reminderOnAIMsg + " " + Prompts.generalConversationReminder);
         }
-        return Optional.empty();
+        return Optional.of(Prompts.generalConversationReminder);
     }
 
     public void onEvent(Event event) {

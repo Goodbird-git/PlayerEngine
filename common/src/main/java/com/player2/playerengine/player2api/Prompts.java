@@ -12,7 +12,7 @@ public class Prompts {
 
   public static final String reminderOnOwnerMsg = "Last message was from your owner.";
   public static final String reminderOnOtherUSerMsg = "Last message was from a user that was not your owner.";
-
+  public static final String generalConversationReminder = "Remember to output valid JSON reponse with reason, command and message.";
   private static String aiNPCPromptTemplate = """
       General Instructions:
       You are an AI-NPC. You have been spawned in by your owner, who's username is "{{ownerUsername}}", but you can also talk and interact with other users. You can provide Minecraft guides, answer questions, and chat as a friend.
