@@ -23,6 +23,7 @@ import com.player2.playerengine.commands.SetAIBridgeEnabledCommand;
 import com.player2.playerengine.commands.StopCommand;
 import com.player2.playerengine.commands.random.ScanCommand;
 import com.player2.playerengine.commands.base.CommandException;
+import com.player2.playerengine.commands.SimpleExploreCommand;
 
 public class PlayerEngineCommands {
    public static void init(PlayerEngineController controller) throws CommandException {
@@ -49,6 +50,7 @@ public class PlayerEngineCommands {
                   new AttackPlayerOrMobCommand(),
                   new SetAIBridgeEnabledCommand(),
                   new FarmCommand(),
+                  new SimpleExploreCommand(),
                   new FishCommand());
    }
 }

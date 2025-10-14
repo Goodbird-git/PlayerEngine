@@ -25,12 +25,15 @@ import java.util.ArrayList;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
+import java.util.HashSet;
 
 public class WorldData implements IWorldData {
    private final WaypointCollection waypoints = new WaypointCollection();
    private final ContainerMemory containerMemory = new ContainerMemory();
    public final ResourceKey<Level> dimension;
+   private final HashSet<Long> localChunkCache = new HashSet<>();
 
    WorldData(ResourceKey<Level> dimension) {
       this.dimension = dimension;
@@ -51,11 +54,15 @@ public class WorldData implements IWorldData {
       return new ICachedWorld() {
          @Override
          public boolean isCached(int blockX, int blockZ) {
-            return false;
+            int chunkX = blockX >> 4;
+            int chunkZ = blockZ >> 4;
+            long key = ChunkPos.asLong(chunkX, chunkZ);
+            return localChunkCache.contains(key);
          }
 
          @Override
-         public ArrayList<BlockPos> getLocationsOf(String block, int maximum, int centerX, int centerZ, int maxRegionDistanceSq) {
+         public ArrayList<BlockPos> getLocationsOf(String block, int maximum, int centerX, int centerZ,
+               int maxRegionDistanceSq) {
             return new ArrayList<>();
          }
       };
@@ -69,5 +76,17 @@ public class WorldData implements IWorldData {
    @Override
    public IContainerMemory getContainerMemory() {
       return this.containerMemory;
+   }
+
+   @Override
+   public void addBlockPosToCache(int blockX, int blockZ) {
+      int chunkX = blockX >> 4;
+      int chunkZ = blockZ >> 4;
+      addChunkPosToCache(chunkX, chunkZ);
+   }
+
+   public void addChunkPosToCache(int chunkX, int chunkZ) {
+      long key = ChunkPos.asLong(chunkX, chunkZ);
+      this.localChunkCache.add(key);
    }
 }

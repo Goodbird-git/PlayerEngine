@@ -38,6 +38,7 @@ import com.player2.playerengine.automaton.api.IBaritone;
 import com.player2.playerengine.automaton.api.entity.LivingEntityInventory;
 import com.player2.playerengine.automaton.api.utils.IEntityContext;
 import com.player2.playerengine.automaton.api.utils.IInteractionController;
+import com.player2.playerengine.trackers.CacheTracker;
 
 import java.util.Arrays;
 import java.util.List;
@@ -73,6 +74,7 @@ public class PlayerEngineController {
    private EntityTracker entityTracker;
    private BlockScanner blockScanner;
    private SimpleChunkTracker chunkTracker;
+   private CacheTracker cacheTracker;
    private MiscBlockTracker miscBlockTracker;
    private CraftingRecipeTracker craftingRecipeTracker;
    private EntityStuckTracker entityStuckTracker;
@@ -116,6 +118,7 @@ public class PlayerEngineController {
       this.extraController = new PlayerExtraController(this);
       this.initializeBaritoneSettings();
       this.botBehaviour = new BotBehaviour(this);
+      this.cacheTracker = new CacheTracker(this);
       this.initializeCommands();
       PlayerEngineSettings.load(
             newSettings -> {
@@ -147,6 +150,7 @@ public class PlayerEngineController {
       this.trackerManager.tick();
       this.blockScanner.tick();
       this.taskRunner.tick();
+      this.cacheTracker.tick();
       this.inputControls.onTickPost();
       this.baritone.serverTick();
       this.player2apiService.trySendHeartbeat();

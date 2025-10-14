@@ -23,4 +23,6 @@ public interface IWorldData {
    IWaypointCollection getWaypoints();
 
    IContainerMemory getContainerMemory();
+
+   void addBlockPosToCache(int blockX, int blockZ);
 }
