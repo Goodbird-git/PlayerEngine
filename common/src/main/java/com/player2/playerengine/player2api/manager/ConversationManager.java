@@ -98,7 +98,7 @@ public class ConversationManager {
 
     private static void process(Consumer<Event.CharacterMessage> onCharacterEvent, Consumer<String> onErrEvent) {
         Optional<AgentConversationData> dataToProcess = queueData.values().stream().filter(data -> {
-            return data.getPriority() != 0;
+            return data.getPriority() != 0 && data.getEntity() != null;
         }).max(Comparator.comparingLong(AgentConversationData::getPriority));
         llmCompleters.stream().filter(LLMCompleter::isAvailible).forEach(completer -> {
             dataToProcess.ifPresent(data -> {
@@ -139,5 +139,9 @@ public class ConversationManager {
 
     private static boolean isCloseToPlayer(AgentConversationData data, String userName) {
         return StatusUtils.getDistanceToUsername(data.getMod(), userName) < messagePassingMaxDistance;
+    }
+
+    public void despwnCompanion(UUID id) {
+        queueData.remove(id);
     }
 }
