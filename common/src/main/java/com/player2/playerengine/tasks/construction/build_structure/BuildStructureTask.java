@@ -198,7 +198,7 @@ public class BuildStructureTask extends Task {
                         String code = ((BuildFromCode) actuallyRunningTask).code;
                         history.addAssistantMessage(code, service);
                         String tryAgainMessage = String.format(
-                                "The code was executed, but got error \n(%s)\nTry again and generate code with the same description:\n(%s)",
+                                "The code was executed, but got error \n(%s)\nTry again and generate code with the same description:\n(%s). | REMEMBER: do NOT use any math functions such as Math.sin, Math.abs, etc. Do NOT make functions, as these will not be parsed.",
                                 errStr, description);
                         LOGGER.info(tryAgainMessage);
                         history.addUserMessage(tryAgainMessage, service);

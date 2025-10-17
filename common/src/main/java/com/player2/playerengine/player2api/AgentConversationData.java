@@ -82,6 +82,10 @@ public class AgentConversationData {
         Event lastEvent = mod.getAIPersistantData().dumpEventQueueToConversationHistoryAndReturnLastEvent(eventQueue,
                 mod.getPlayer2APIService());
         Optional<String> reminderString = getReminderStringFromLastEvent(lastEvent);
+        // remove all invalid npcs:
+        String defaultReminderString = " | REMEMBER TO OUTPUT ONLY VALID JSON OUTPUT";
+        reminderString = reminderString.map(a -> a + defaultReminderString);
+        reminderString = Optional.of(reminderString.orElse(defaultReminderString));
 
         String agentStatus = AgentStatus.fromMod(this.mod).toString();
         String worldStatus = WorldStatus.fromMod(this.mod).toString();

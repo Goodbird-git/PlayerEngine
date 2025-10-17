@@ -1,15 +1,19 @@
 package com.player2.playerengine.util;
 
 import com.player2.playerengine.player2api.Character;
+import com.player2.playerengine.PlayerEngine;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class Debug {
    private static final int DEBUG_LOG_LEVEL = 0;
    private static final int WARN_LOG_LEVEL = 1;
    private static final int ERROR_LOG_LEVEL = 2;
+   public static final Logger LOGGER = LogManager.getLogger(PlayerEngine.MOD_NAME);
 
    public static void logInternal(String message) {
       if (canLog(0)) {
-         System.out.println("ALTO CLEF: " + message);
+         LOGGER.info("ALTO CLEF: {}", message);
       }
    }
 
@@ -86,6 +90,7 @@ public class Debug {
       switch (enabledLogLevel) {
          case "NONE":
          case "ALL":
+            return true;
          case "NORMAL":
             return level == 1 || level == 2;
          case "WARN":
