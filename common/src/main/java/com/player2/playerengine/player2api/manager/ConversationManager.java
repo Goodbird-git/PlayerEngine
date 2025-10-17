@@ -98,7 +98,7 @@ public class ConversationManager {
 
     private static void process(Consumer<Event.CharacterMessage> onCharacterEvent, Consumer<String> onErrEvent) {
         Optional<AgentConversationData> dataToProcess = queueData.values().stream().filter(data -> {
-            return data.getPriority() != 0 && data.getEntity() != null;
+            return data.getPriority() != 0 && data.getEntity() != null && data.getMod().getOwner() != null;
         }).max(Comparator.comparingLong(AgentConversationData::getPriority));
         llmCompleters.stream().filter(LLMCompleter::isAvailible).forEach(completer -> {
             dataToProcess.ifPresent(data -> {
