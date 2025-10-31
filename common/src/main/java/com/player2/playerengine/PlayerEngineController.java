@@ -24,13 +24,7 @@ import com.player2.playerengine.player2api.Player2APIService;
 import com.player2.playerengine.player2api.Character;
 import com.player2.playerengine.tasks.base.Task;
 import com.player2.playerengine.tasks.base.TaskRunner;
-import com.player2.playerengine.trackers.CraftingRecipeTracker;
-import com.player2.playerengine.trackers.EntityStuckTracker;
-import com.player2.playerengine.trackers.EntityTracker;
-import com.player2.playerengine.trackers.MiscBlockTracker;
-import com.player2.playerengine.trackers.SimpleChunkTracker;
-import com.player2.playerengine.trackers.TrackerManager;
-import com.player2.playerengine.trackers.UserBlockRangeTracker;
+import com.player2.playerengine.trackers.*;
 import com.player2.playerengine.trackers.storage.ContainerSubTracker;
 import com.player2.playerengine.trackers.storage.ItemStorageTracker;
 import com.player2.playerengine.automaton.Baritone;
@@ -38,7 +32,6 @@ import com.player2.playerengine.automaton.api.IBaritone;
 import com.player2.playerengine.automaton.api.entity.LivingEntityInventory;
 import com.player2.playerengine.automaton.api.utils.IEntityContext;
 import com.player2.playerengine.automaton.api.utils.IInteractionController;
-import com.player2.playerengine.trackers.CacheTracker;
 
 import java.util.Arrays;
 import java.util.List;
@@ -83,6 +76,7 @@ public class PlayerEngineController {
    private SlotHandler slotHandler;
    private PlayerExtraController extraController;
    private PlayerEngineSettings settings;
+   private ChunkLoadingTracker chunkLoader;
    private boolean paused = false;
    private Task storedTask;
    public boolean isStopping = false;
@@ -141,6 +135,7 @@ public class PlayerEngineController {
       ConversationManager.getOrCreateEventQueueData(this);
       this.aiPersistantData = new AIPersistantData(this, character);
       this.player2apiService = new Player2APIService(this, player2GameId);
+      this.chunkLoader = new ChunkLoadingTracker(this);
    }
 
    public void serverTick() {
@@ -154,6 +149,7 @@ public class PlayerEngineController {
       this.inputControls.onTickPost();
       this.baritone.serverTick();
       this.player2apiService.trySendHeartbeat();
+      this.chunkLoader.tick();
    }
 
    static {
