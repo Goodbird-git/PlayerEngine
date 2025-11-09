@@ -271,7 +271,7 @@ public final class FishingProcess extends BaritoneProcessHelper implements IBari
       ItemStack itemStack = user.getItemInHand(hand);
       CustomFishingBobberEntity bobber = this.findOurBobber();
       if (bobber != null) {
-         if (!world.isClientSide) {
+         if (!world.isClientSide()) {
             int i = bobber.use(itemStack);
             itemStack.hurtAndBreak(i, user, EquipmentSlot.MAINHAND);
          }
@@ -298,7 +298,7 @@ public final class FishingProcess extends BaritoneProcessHelper implements IBari
             0.5F,
             0.4F / (world.getRandom().nextFloat() * 0.4F + 0.8F)
          );
-         if (!world.isClientSide) {
+         if (!world.isClientSide()) {
             int i = (int)(EnchantmentHelper.getFishingTimeReduction((ServerLevel) world, itemStack, user) * 20.0F);
             int j = EnchantmentHelper.getFishingLuckBonus((ServerLevel) world, itemStack, user);
             world.addFreshEntity(new CustomFishingBobberEntity(user, world, j, i));

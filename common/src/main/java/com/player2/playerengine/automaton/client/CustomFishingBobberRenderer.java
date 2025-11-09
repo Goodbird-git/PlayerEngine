@@ -25,6 +25,7 @@ import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
@@ -32,6 +33,7 @@ import net.minecraft.client.renderer.entity.EntityRendererProvider.Context;
 import net.minecraft.client.renderer.entity.FishingHookRenderer;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.FishingHookRenderState;
+import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
@@ -59,32 +61,35 @@ public class CustomFishingBobberRenderer extends EntityRenderer<CustomFishingBob
       return super.shouldRender(livingEntity, camera, camX, camY, camZ) && livingEntity.getPlayerOwner() != null;
    }
 
-   public void render(FishingHookRenderState renderState, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight) {
-      poseStack.pushPose();
-      poseStack.pushPose();
-      poseStack.scale(0.5F, 0.5F, 0.5F);
-      poseStack.mulPose(this.entityRenderDispatcher.cameraOrientation());
-      PoseStack.Pose pose = poseStack.last();
-      VertexConsumer vertexConsumer = bufferSource.getBuffer(RENDER_TYPE);
-      vertex(vertexConsumer, pose, packedLight, 0.0F, 0, 0, 1);
-      vertex(vertexConsumer, pose, packedLight, 1.0F, 0, 1, 1);
-      vertex(vertexConsumer, pose, packedLight, 1.0F, 1, 1, 0);
-      vertex(vertexConsumer, pose, packedLight, 0.0F, 1, 0, 0);
-      poseStack.popPose();
-      float f = (float)renderState.lineOriginOffset.x;
-      float g = (float)renderState.lineOriginOffset.y;
-      float h = (float)renderState.lineOriginOffset.z;
-      VertexConsumer vertexConsumer2 = bufferSource.getBuffer(RenderType.lineStrip());
-      PoseStack.Pose pose2 = poseStack.last();
-      int i = 16;
+    public void submit(FishingHookRenderState fishingHookRenderState, PoseStack poseStack, SubmitNodeCollector submitNodeCollector, CameraRenderState cameraRenderState) {
+        poseStack.pushPose();
+        poseStack.pushPose();
+        poseStack.scale(0.5F, 0.5F, 0.5F);
+        poseStack.mulPose(cameraRenderState.orientation);
+        submitNodeCollector.submitCustomGeometry(poseStack, RENDER_TYPE, (pose, vertexConsumer) -> {
+            vertex(vertexConsumer, pose, fishingHookRenderState.lightCoords, 0.0F, 0, 0, 1);
+            vertex(vertexConsumer, pose, fishingHookRenderState.lightCoords, 1.0F, 0, 1, 1);
+            vertex(vertexConsumer, pose, fishingHookRenderState.lightCoords, 1.0F, 1, 1, 0);
+            vertex(vertexConsumer, pose, fishingHookRenderState.lightCoords, 0.0F, 1, 0, 0);
+        });
+        poseStack.popPose();
+        float f = (float)fishingHookRenderState.lineOriginOffset.x;
+        float g = (float)fishingHookRenderState.lineOriginOffset.y;
+        float h = (float)fishingHookRenderState.lineOriginOffset.z;
+        submitNodeCollector.submitCustomGeometry(poseStack, RenderType.lines(), (pose, vertexConsumer) -> {
+            int i = 16;
 
-      for(int j = 0; j <= 16; ++j) {
-         stringVertex(f, g, h, vertexConsumer2, pose2, fraction(j, 16), fraction(j + 1, 16));
-      }
+            for(int j = 0; j < 16; ++j) {
+                float k = fraction(j, 16);
+                float l = fraction(j + 1, 16);
+                stringVertex(f, g, h, vertexConsumer, pose, k, l);
+                stringVertex(f, g, h, vertexConsumer, pose, l, k);
+            }
 
-      poseStack.popPose();
-      super.render(renderState, poseStack, bufferSource, packedLight);
-   }
+        });
+        poseStack.popPose();
+        super.submit(fishingHookRenderState, poseStack, submitNodeCollector, cameraRenderState);
+    }
 
    public static HumanoidArm getHoldingArm(LivingEntity player) {
       return player.getMainHandItem().getItem() instanceof FishingRodItem ? player.getMainArm() : player.getMainArm().getOpposite();

@@ -23,7 +23,7 @@ public class WorldBlockModifiedMixin {
       at = {@At("HEAD")}
    )
    public void onBlockWasChanged(BlockPos pos, BlockState oldBlock, BlockState newBlock, CallbackInfo ci) {
-      if (!((Level)(Object)this).isClientSide && !this.hasBlock(oldBlock, pos) && this.hasBlock(newBlock, pos)) {
+      if (!((Level) (Object) this).isClientSide() && !this.hasBlock(oldBlock, pos) && this.hasBlock(newBlock, pos)) {
          BlockPlaceEvent evt = new BlockPlaceEvent(pos, newBlock);
          EventBus.publish(evt);
       }

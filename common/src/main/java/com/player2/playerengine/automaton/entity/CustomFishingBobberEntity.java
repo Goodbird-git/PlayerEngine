@@ -155,7 +155,7 @@ public class CustomFishingBobberEntity extends ThrowableProjectile {
       LivingEntity playerEntity = this.getPlayerOwner();
       if (playerEntity == null) {
          this.discard();
-      } else if (this.level().isClientSide || !this.removeIfInvalid(playerEntity)) {
+      } else if (this.level().isClientSide() || !this.removeIfInvalid(playerEntity)) {
          if (this.onGround()) {
             this.removalTimer++;
             if (this.removalTimer >= 1200) {
@@ -222,7 +222,7 @@ public class CustomFishingBobberEntity extends ThrowableProjectile {
                      this.setDeltaMovement(this.getDeltaMovement().add(0.0, -0.1 * this.velocityRandom.nextFloat() * this.velocityRandom.nextFloat(), 0.0));
                   }
 
-                  if (!this.level().isClientSide) {
+                  if (!this.level().isClientSide()) {
                      this.tickFishingLogic(blockPos);
                   }
                } else {
@@ -271,7 +271,7 @@ public class CustomFishingBobberEntity extends ThrowableProjectile {
 
    protected void onHitEntity(EntityHitResult entityHitResult) {
       super.onHitEntity(entityHitResult);
-      if (!this.level().isClientSide) {
+      if (!this.level().isClientSide()) {
          this.updateHookedEntityId(entityHitResult.getEntity());
       }
    }
@@ -427,7 +427,7 @@ public class CustomFishingBobberEntity extends ThrowableProjectile {
 
    public int use(ItemStack usedItem) {
       LivingEntity playerEntity = this.getPlayerOwner();
-      if (!this.level().isClientSide && playerEntity != null && !this.removeIfInvalid(playerEntity)) {
+      if (!this.level().isClientSide() && playerEntity != null && !this.removeIfInvalid(playerEntity)) {
          int i = 0;
          if (this.hookedEntity != null) {
             this.pullHookedEntity(this.hookedEntity);
@@ -475,7 +475,7 @@ public class CustomFishingBobberEntity extends ThrowableProjectile {
    }
 
    public void handleEntityEvent(byte status) {
-      if (status == 31 && this.level().isClientSide && this.hookedEntity instanceof LivingEntity) {
+      if (status == 31 && this.level().isClientSide() && this.hookedEntity instanceof LivingEntity) {
          this.pullHookedEntity(this.hookedEntity);
       }
 

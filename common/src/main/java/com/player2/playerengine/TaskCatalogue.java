@@ -883,7 +883,7 @@ public class TaskCatalogue {
       String str1 = "iron_nugget";
       shapedRecipe3x3("lantern", Items.LANTERN, 1, str1, str1, str1, str1, "torch", str1, str1, str1, str1);
       shapedRecipe3x3("soul_lantern", Items.SOUL_LANTERN, 1, str1, str1, str1, str1, "soul_torch", str1, str1, str1, str1);
-      shapedRecipe3x3("chain", Items.CHAIN, 1, o, str1, o, o, "iron_ingot", o, o, str1, o);
+      shapedRecipe3x3("chain", Items.IRON_CHAIN, 1, o, str1, o, o, "iron_ingot", o, o, str1, o);
       String c = "chiseled_stone_bricks";
       shapedRecipe3x3("lodestone", Items.LODESTONE, 1, c, c, c, c, "netherite_ingot", c, c, c, c);
       shapedRecipe3x3("lightning_rod", Items.LIGHTNING_ROD, 1, o, "copper_ingot", o, o, "copper_ingot", o, o, "copper_ingot", o);

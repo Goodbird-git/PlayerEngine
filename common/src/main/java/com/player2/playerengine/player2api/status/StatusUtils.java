@@ -59,7 +59,7 @@ public class StatusUtils {
    }
 
    public static String getSpawnPosString(PlayerEngineController mod) {
-      BlockPos spawnPos = mod.getWorld().getSharedSpawnPos();
+      BlockPos spawnPos = mod.getWorld().getRespawnData().globalPos().pos();
       return String.format("(%d, %d, %d)", spawnPos.getX(), spawnPos.getY(), spawnPos.getZ());
    }
 

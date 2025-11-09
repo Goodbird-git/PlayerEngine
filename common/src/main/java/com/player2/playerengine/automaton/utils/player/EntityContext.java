@@ -81,7 +81,7 @@ public class EntityContext implements IEntityContext {
    @Override
    public ServerLevel world() {
       Level world = this.entity.level();
-      if (world.isClientSide) {
+      if (world.isClientSide()) {
          throw new IllegalStateException();
       } else {
          return (ServerLevel)world;

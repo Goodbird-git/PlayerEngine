@@ -34,6 +34,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.players.NameAndId;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
@@ -110,7 +111,7 @@ public interface IEntityContext {
             MinecraftServer server = this.world().getServer();
 
             for (ServerPlayer p : server.getPlayerList().getPlayers()) {
-               if (server.getPlayerList().isOp(p.getGameProfile())) {
+               if (server.getPlayerList().isOp(new NameAndId(p.getGameProfile()))) {
                   IBaritone.KEY.get(p).logDirect(message);
                }
             }
