@@ -33,16 +33,20 @@ public final class PlayerEngine {
    public static final TagKey<Item> WATER_BUCKETS = TagKey.create(Registries.ITEM, id("water_buckets"));
    private static final ThreadPoolExecutor threadPool;
 
-
-   public static final DeferredRegister<EntityType<?>> ENTITY_TYPES = DeferredRegister.create(MOD_ID, Registries.ENTITY_TYPE);
-   public static RegistrySupplier<EntityType<CustomFishingBobberEntity>> FISHING_BOBBER =
-           ENTITY_TYPES.register("custom_fishing_bobber", ()-> EntityType.Builder.of((EntityType.EntityFactory<CustomFishingBobberEntity>) CustomFishingBobberEntity::new, MobCategory.CREATURE)
-           .sized(EntityType.FISHING_BOBBER.getWidth(), EntityType.FISHING_BOBBER.getHeight())
-           .clientTrackingRange(64)
-           .updateInterval(1)
-           .build("custom_fishing_bobber")
+   public static final DeferredRegister<EntityType<?>> ENTITY_TYPES = DeferredRegister.create(MOD_ID,
+         Registries.ENTITY_TYPE);
+   public static RegistrySupplier<EntityType<CustomFishingBobberEntity>> FISHING_BOBBER = ENTITY_TYPES.register(
+         "custom_fishing_bobber",
+         () -> EntityType.Builder
+               .of((EntityType.EntityFactory<CustomFishingBobberEntity>) CustomFishingBobberEntity::new,
+                     MobCategory.CREATURE)
+               .sized(EntityType.FISHING_BOBBER.getWidth(), EntityType.FISHING_BOBBER.getHeight())
+               .clientTrackingRange(64)
+               .updateInterval(1)
+               .build("custom_fishing_bobber")
 
    );
+
    public static ResourceLocation id(String path) {
       return ResourceLocation.fromNamespaceAndPath(MOD_ID, path);
    }
@@ -54,12 +58,13 @@ public final class PlayerEngine {
    public static void onInitialize() {
       DefaultCommands.registerAll();
       ENTITY_TYPES.register();
+      MCCommands.onInit();
    }
 
    static {
       AtomicInteger threadCounter = new AtomicInteger(0);
       threadPool = new ThreadPoolExecutor(
-         4, Integer.MAX_VALUE, 60L, TimeUnit.SECONDS, new SynchronousQueue<>(), r -> new Thread(r, MOD_NAME+" Worker " + threadCounter.incrementAndGet())
-      );
+            4, Integer.MAX_VALUE, 60L, TimeUnit.SECONDS, new SynchronousQueue<>(),
+            r -> new Thread(r, MOD_NAME + " Worker " + threadCounter.incrementAndGet()));
    }
 }

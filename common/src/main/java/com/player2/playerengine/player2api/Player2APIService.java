@@ -28,6 +28,10 @@ public class Player2APIService {
 
    private static MinecraftServer server;
 
+   public String getClientId() {
+      return clientId;
+   }
+
    public Player2APIService(PlayerEngineController controller, String clientId) {
       this.clientId = clientId;
       this.controller = controller;
@@ -92,7 +96,8 @@ public class Player2APIService {
 
    public void textToSpeech(String message, Character character, Consumer<Map<String, JsonElement>> onFinish) {
       try {
-         RegistryFriendlyByteBuf buf = new RegistryFriendlyByteBuf(Unpooled.buffer(), controller.getOwner().registryAccess());
+         RegistryFriendlyByteBuf buf = new RegistryFriendlyByteBuf(Unpooled.buffer(),
+               controller.getOwner().registryAccess());
 
          buf.writeUtf(clientId);
          buf.writeUtf(Player2HTTPUtils.awaitToken(controller.getOwner(), clientId));
@@ -103,8 +108,8 @@ public class Player2APIService {
             buf.writeUtf(id);
          }
 
-         ((ServerPlayer)controller.getOwner()).connection.send(NetworkManager.toPacket(NetworkManager.Side.S2C,
-                 ResourceLocation.fromNamespaceAndPath("playerengine", "stream_tts"), buf));
+         ((ServerPlayer) controller.getOwner()).connection.send(NetworkManager.toPacket(NetworkManager.Side.S2C,
+               ResourceLocation.fromNamespaceAndPath("playerengine", "stream_tts"), buf));
          onFinish.accept(null);
       } catch (Exception var9) {
       }

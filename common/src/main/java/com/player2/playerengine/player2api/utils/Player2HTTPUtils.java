@@ -17,7 +17,8 @@ public class Player2HTTPUtils {
 
     private static final String WEB_API_URL = "https://api.player2.game";
 
-    public static Map<String, JsonElement> sendRequest(Player player, String clientId, String endpoint, boolean postRequest, JsonObject requestBody) throws Exception{
+    public static Map<String, JsonElement> sendRequest(Player player, String clientId, String endpoint,
+            boolean postRequest, JsonObject requestBody) throws Exception {
         String token = awaitToken(player, clientId);
         Map<String, String> headers = getHeaders(clientId, token);
 
@@ -25,15 +26,19 @@ public class Player2HTTPUtils {
             return HTTPUtils.sendRequest(WEB_API_URL, endpoint, postRequest, requestBody, headers);
         } catch (HttpApiException e) {
             if (e.getStatusCode() == 401) {
-                LOGGER.warn("Received 401 Unauthorized for {}. Invalidating token.", new AuthKey(player.getUUID(), clientId));
+                LOGGER.warn("Received 401 Unauthorized for {}. Invalidating token.",
+                        new AuthKey(player.getUUID(), clientId));
                 AuthenticationManager.getInstance().invalidateToken(player, clientId);
                 throw new Exception("Token expired, re-authentication started.", e);
+            } else if (e.getStatusCode() == 402) {
+                LOGGER.warn("Insufficient AI power for user {}", player.getName().getString());
+                throw new Exception("Insufficient AI Power. Go to player2.game to get more AI Power.");
             }
             throw e;
         }
     }
 
-    private static Map<String, String> getHeaders(String clientId, String token){
+    private static Map<String, String> getHeaders(String clientId, String token) {
         Map<String, String> headers = new HashMap<>();
         headers.put("player2-game-key", clientId);
         headers.put("Authorization", "Bearer " + token);
