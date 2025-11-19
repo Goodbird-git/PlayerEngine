@@ -14,7 +14,7 @@ public class TokenStorage {
     private static final TokenStorage INSTANCE = new TokenStorage();
     private CompoundTag tokensStored = new CompoundTag();
 
-    private TokenStorage(){
+    private TokenStorage() {
         load();
     }
 
@@ -22,7 +22,7 @@ public class TokenStorage {
         return username + ":" + clientId;
     }
 
-    static String getToken(String username, String clientId) {
+    public static String getToken(String username, String clientId) {
         return getInstance().tokensStored.getString(getInstance().makeKey(username, clientId));
     }
 

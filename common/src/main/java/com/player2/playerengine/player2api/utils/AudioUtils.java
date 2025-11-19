@@ -13,6 +13,9 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 
 public class AudioUtils {
     private static final String WEB_API_URL = "https://api.player2.game";
@@ -30,8 +33,7 @@ public class AudioUtils {
             }
             requestBody.add("voice_ids", voiceIdsArray);
 
-
-            URL url = new URL(WEB_API_URL+"/v1/tts/stream");
+            URL url = new URL(WEB_API_URL + "/v1/tts/stream");
             connection = (HttpURLConnection) url.openConnection();
             connection.setRequestMethod("POST");
             connection.setRequestProperty("Content-Type", "application/json");
@@ -48,7 +50,8 @@ public class AudioUtils {
             }
 
             try (InputStream inputStream = connection.getInputStream();
-                 AudioInputStream audioStream = AudioSystem.getAudioInputStream(new BufferedInputStream(inputStream))) {
+                    AudioInputStream audioStream = AudioSystem
+                            .getAudioInputStream(new BufferedInputStream(inputStream))) {
 
                 AudioFormat format = audioStream.getFormat();
                 DataLine.Info info = new DataLine.Info(SourceDataLine.class, format);
