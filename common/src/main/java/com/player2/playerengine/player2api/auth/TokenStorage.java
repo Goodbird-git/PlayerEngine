@@ -21,7 +21,7 @@ public class TokenStorage {
         return username + ":" + clientId;
     }
 
-    static String getToken(String username, String clientId) {
+    public static String getToken(String username, String clientId) {
         return getInstance().tokensStored.getString(getInstance().makeKey(username, clientId));
     }
 
