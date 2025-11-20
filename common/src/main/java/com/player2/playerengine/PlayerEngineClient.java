@@ -34,7 +34,7 @@ public final class PlayerEngineClient {
          });
       });
       NetworkManager.registerReceiver(NetworkManager.Side.S2C,
-         ResourceLocation.fromNamespaceAndPath("playerengine", "response_stt"),
+         new ResourceLocation("playerengine", "response_stt"),
          (buf, context) -> {
             String token = buf.readUtf();
             LOGGER.info("Client: Recieved packet response_stt token from server isNullOrEmpty={}",

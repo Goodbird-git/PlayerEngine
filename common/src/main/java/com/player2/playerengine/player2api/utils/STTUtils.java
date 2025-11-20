@@ -18,7 +18,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import dev.architectury.networking.NetworkManager;
-import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.FriendlyByteBuf;
 import io.netty.buffer.Unpooled;
 import net.minecraft.resources.ResourceLocation;
 
@@ -315,25 +315,23 @@ public class STTUtils {
     }
 
     private static void initToken() {
-        RegistryFriendlyByteBuf buf = new RegistryFriendlyByteBuf(Unpooled.buffer(),
-                Minecraft.getInstance().player.registryAccess());
+        FriendlyByteBuf buf = new FriendlyByteBuf(Unpooled.buffer());
         buf.writeUtf(clientId);
         Minecraft.getInstance().getConnection().send(
                 NetworkManager.toPacket(
                         NetworkManager.Side.C2S,
-                        ResourceLocation.fromNamespaceAndPath("playerengine", "request_stt"),
+                        new ResourceLocation("playerengine", "request_stt"),
                         buf));
     }
 
     private static void onSTTMessageGenerated(String message) {
 
-        RegistryFriendlyByteBuf buf = new RegistryFriendlyByteBuf(Unpooled.buffer(),
-                Minecraft.getInstance().player.registryAccess());
+        FriendlyByteBuf buf = new FriendlyByteBuf(Unpooled.buffer());
         buf.writeUtf(message);
         Minecraft.getInstance().getConnection().send(
                 NetworkManager.toPacket(
                         NetworkManager.Side.C2S,
-                        ResourceLocation.fromNamespaceAndPath("playerengine", "user_message"),
+                        new ResourceLocation("playerengine", "user_message"),
                         buf));
     }
 

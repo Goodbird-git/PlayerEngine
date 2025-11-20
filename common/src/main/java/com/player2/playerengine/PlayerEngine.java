@@ -26,7 +26,7 @@ import com.player2.playerengine.player2api.auth.TokenStorage;
 
 import com.player2.playerengine.player2api.manager.ConversationManager;
 import com.player2.playerengine.player2api.Event;
-import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
 import dev.architectury.networking.NetworkManager;
 import io.netty.buffer.Unpooled;
@@ -66,49 +66,30 @@ public final class PlayerEngine {
       ENTITY_TYPES.register();
       MCCommands.onInit();
       NetworkManager.registerReceiver(NetworkManager.Side.C2S,
-
-
-            ResourceLocation.fromNamespaceAndPath("playerengine", "user_message"),
-
-
+            new ResourceLocation("playerengine", "user_message"),
             (buf, context) -> {
-
-
                LOGGER.info("Server: Recieved user_message packet");
-
-
                String username = context.getPlayer().getName().getString();
-
-
                String message = buf.readUtf();
-
-
                ConversationManager.onUserChatMessage(new Event.UserMessage(message, username));
-
-
                AgentSideEffects.broadcastChatToAllPlayers(context.getPlayer().getServer(),
-
-
                      String.format("<%s> %s", context.getPlayer().getName().getString(), message));
-
-
             });
 
 
       NetworkManager.registerReceiver(NetworkManager.Side.C2S,
-      ResourceLocation.fromNamespaceAndPath("playerengine", "request_stt"),
+      new ResourceLocation("playerengine", "request_stt"),
       (buf, context) -> {
          LOGGER.info("Server: Recieved request_stt packet");
          String clientId = buf.readUtf();
          String username = context.getPlayer().getName().getString();
          String storedToken = TokenStorage.getToken(username, clientId);
-         RegistryFriendlyByteBuf buf2 = new RegistryFriendlyByteBuf(Unpooled.buffer(),
-               context.getPlayer().registryAccess());
+         FriendlyByteBuf buf2 = new FriendlyByteBuf(Unpooled.buffer());
          buf2.writeUtf(storedToken);
          LOGGER.info("Server: Sending response_stt packet w/ token {}", storedToken);
          ((ServerPlayer) context.getPlayer()).connection.send(NetworkManager.toPacket(
                NetworkManager.Side.S2C,
-               ResourceLocation.fromNamespaceAndPath("playerengine", "response_stt"), buf2));
+               new ResourceLocation("playerengine", "response_stt"), buf2));
       });
    }
 
