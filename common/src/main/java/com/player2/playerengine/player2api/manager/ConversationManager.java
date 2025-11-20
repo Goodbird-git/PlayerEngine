@@ -18,11 +18,16 @@ import dev.architectury.event.EventResult;
 import dev.architectury.event.events.common.ChatEvent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import java.util.function.BiConsumer;
 
 import com.player2.playerengine.PlayerEngineController;
 import com.player2.playerengine.player2api.Event.UserMessage;
 import com.player2.playerengine.player2api.status.StatusUtils;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.player.Player;
+
+
 
 public class ConversationManager {
     public static final Logger LOGGER = LogManager.getLogger();
@@ -96,13 +101,16 @@ public class ConversationManager {
                 });
     }
 
-    private static void process(Consumer<Event.CharacterMessage> onCharacterEvent, Consumer<String> onErrEvent) {
+    private static void process(Consumer<Event.CharacterMessage> onCharacterEvent, BiConsumer<String, ServerPlayer> onErrEvent) {
         Optional<AgentConversationData> dataToProcess = queueData.values().stream().filter(data -> {
             return data.getPriority() != 0 && data.getEntity() != null && data.getMod().getOwner() != null;
         }).max(Comparator.comparingLong(AgentConversationData::getPriority));
         llmCompleters.stream().filter(LLMCompleter::isAvailible).forEach(completer -> {
             dataToProcess.ifPresent(data -> {
-                data.process(onCharacterEvent, onErrEvent, completer);
+                Player owner = data.getMod().getOwner();
+                ServerPlayer ownerServerPlayer = owner.getServer().getPlayerList().getPlayer(owner.getUUID());
+                data.process(onCharacterEvent, (errMsg) -> onErrEvent.accept(errMsg, ownerServerPlayer),
+                        completer);
             });
         });
     }
@@ -116,8 +124,8 @@ public class ConversationManager {
         Consumer<Event.CharacterMessage> onCharacterEvent = (data) -> {
             AgentSideEffects.onEntityMessage(server, data);
         };
-        Consumer<String> onErrEvent = (errMsg) -> {
-            AgentSideEffects.onError(server, errMsg);
+        BiConsumer<String, ServerPlayer> onErrEvent = (errMsg, player) -> {
+            AgentSideEffects.onError(server, errMsg, player);
         };
 
         if (!Lock.isConversationLocked()) {

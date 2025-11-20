@@ -28,6 +28,9 @@ public class Player2HTTPUtils {
                 LOGGER.warn("Received 401 Unauthorized for {}. Invalidating token.", new AuthKey(player.getUUID(), clientId));
                 AuthenticationManager.getInstance().invalidateToken(player, clientId);
                 throw new Exception("Token expired, re-authentication started.", e);
+            }else if (e.getStatusCode() == 402) {
+                LOGGER.warn("Insufficient AI power for user {}", player.getName().getString());
+                throw new Exception("Insufficient AI Power. Go to player2.game to get more AI Power.");
             }
             throw e;
         }

@@ -7,7 +7,8 @@ import com.player2.playerengine.player2api.manager.ConversationManager;
 import com.player2.playerengine.player2api.manager.TTSManager;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.MutableComponent;
 import com.player2.playerengine.PlayerEngineController;
 import com.player2.playerengine.commands.base.CommandExecutor;
 import com.player2.playerengine.tasks.LookAtOwnerTask;
@@ -59,8 +60,9 @@ public class AgentSideEffects {
         }
     }
 
-    public static void onError(MinecraftServer server, String errMsg) {
+    public static void onError(MinecraftServer server, String errMsg, ServerPlayer player) {
         LOGGER.error(errMsg);
+        broadcastErrorMsgToPlayer(server, errMsg, player);
     }
 
     public static void onCommandListGenerated(PlayerEngineController mod, String command,
@@ -110,6 +112,11 @@ public class AgentSideEffects {
 
     private static void broadcastChatToPlayer(MinecraftServer server, String message, ServerPlayer player) {
         player.displayClientMessage(Component.literal(message), false);
+    }
+    private static void broadcastErrorMsgToPlayer(MinecraftServer server, String message, ServerPlayer player) {
+        MutableComponent output = Component.literal(message);
+        output.setStyle(output.getStyle().applyFormat(ChatFormatting.RED));
+        player.displayClientMessage(output, false);
     }
 
 }

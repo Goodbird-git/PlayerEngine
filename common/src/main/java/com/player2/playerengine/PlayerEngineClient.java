@@ -11,6 +11,7 @@ import java.util.concurrent.CompletableFuture;
 
 @KeepName
 public final class PlayerEngineClient {
+   public static boolean enabledTTS = true;
    public static void onInitializeClient() {
       EntityRendererRegistry.register(PlayerEngine.FISHING_BOBBER, CustomFishingBobberRenderer::new);
 
