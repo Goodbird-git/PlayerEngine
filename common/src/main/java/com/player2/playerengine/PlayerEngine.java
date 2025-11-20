@@ -29,6 +29,8 @@ public final class PlayerEngine {
 
    public static final String MOD_ID = "playerengine";
    public static final String MOD_NAME = "PlayerEngine";
+
+
    public static final TagKey<Item> EMPTY_BUCKETS = TagKey.create(Registries.ITEM, id("empty_buckets"));
    public static final TagKey<Item> WATER_BUCKETS = TagKey.create(Registries.ITEM, id("water_buckets"));
    private static final ThreadPoolExecutor threadPool;
@@ -54,6 +56,7 @@ public final class PlayerEngine {
    public static void onInitialize() {
       DefaultCommands.registerAll();
       ENTITY_TYPES.register();
+      MCCommands.onInit();
    }
 
    static {
