@@ -119,4 +119,10 @@ public class AgentSideEffects {
         player.displayClientMessage(output, false);
     }
 
+    public static void broadcastChatToAllPlayers(MinecraftServer server, String message) {
+        for (ServerPlayer player : server.getPlayerList().getPlayers()) {
+            broadcastChatToPlayer(server, message, player);
+        }
+    }
+
 }
