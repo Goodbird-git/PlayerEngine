@@ -9,7 +9,7 @@
     system = "x86_64-linux";
     pkgs = import nixpkgs {inherit system; };
   in {
-    devShells.${system}.one = pkgs.mkShell {
+    devShells.${system}.default = pkgs.mkShell {
 	packages = with pkgs; [
 	  javaPackages.compiler.openjdk21
 	];

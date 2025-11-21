@@ -17,6 +17,7 @@
 
 package com.player2.playerengine.automaton.api.entity;
 
+import net.minecraft.resources.ResourceLocation;
 import com.google.common.collect.ImmutableList;
 import java.util.List;
 import java.util.function.Predicate;
@@ -44,8 +45,13 @@ import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
+import com.player2.playerengine.PlayerEngine;
+import net.minecraft.core.registries.BuiltInRegistries;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class LivingEntityInventory implements Container, Nameable {
+   public static final Logger LOGGER = LogManager.getLogger(PlayerEngine.MOD_NAME);
    public static final int ITEM_USAGE_COOLDOWN = 5;
    public static final int MAIN_SIZE = 36;
    private static final int HOTBAR_SIZE = 9;
@@ -362,47 +368,62 @@ public class LivingEntityInventory implements Container, Nameable {
       return ((ItemStack)this.main.get(this.selectedSlot)).getDestroySpeed(block);
    }
 
-   public ListTag writeNbt(HolderLookup.Provider levelRegistryAccess, ListTag nbtList) {
-      for (int i = 0; i < this.main.size(); i++) {
-         if (!((ItemStack)this.main.get(i)).isEmpty()) {
-            CompoundTag nbtCompound = new CompoundTag();
-            nbtCompound.putByte("Slot", (byte)i);
-            ((ItemStack)this.main.get(i)).save(levelRegistryAccess, nbtCompound);
-            nbtList.add(nbtCompound);
+   private void writeItemTag(HolderLookup.Provider levelRegistryAccess, ItemStack stack, ListTag nbtList, int index){
+      if(stack.isEmpty()){
+         return;
+      }
+      LOGGER.info("Writing itemTag={}");
+      CompoundTag itemTag = new CompoundTag();
+      stack.save(levelRegistryAccess, itemTag);
+
+      if (!itemTag.contains("id")) {
+         ResourceLocation key = BuiltInRegistries.ITEM.getKey(stack.getItem());
+         if (key != null) {
+            itemTag.putString("id", key.toString());
+            itemTag.putByte("Count", (byte) stack.getCount());
+         } else{
+            LOGGER.info("ERR writing item: key={}, itemTag={} ", key, itemTag);
          }
       }
-
-      for (int ix = 0; ix < this.armor.size(); ix++) {
-         if (!((ItemStack)this.armor.get(ix)).isEmpty()) {
-            CompoundTag nbtCompound = new CompoundTag();
-            nbtCompound.putByte("Slot", (byte)(ix + 100));
-            ((ItemStack)this.armor.get(ix)).save(levelRegistryAccess, nbtCompound);
-            nbtList.add(nbtCompound);
-         }
-      }
-
-      for (int ixx = 0; ixx < this.offHand.size(); ixx++) {
-         if (!((ItemStack)this.offHand.get(ixx)).isEmpty()) {
-            CompoundTag nbtCompound = new CompoundTag();
-            nbtCompound.putByte("Slot", (byte)(ixx + 150));
-            ((ItemStack)this.offHand.get(ixx)).save(levelRegistryAccess, nbtCompound);
-            nbtList.add(nbtCompound);
-         }
-      }
-
-      return nbtList;
+      itemTag.putByte("Slot", (byte)index);
+      nbtList.add(itemTag);
+      LOGGER.info("Done writing itemTag={}");
    }
 
+   public ListTag writeNbt(HolderLookup.Provider levelRegistryAccess, ListTag nbtList) {
+      LOGGER.info("writeNBT inventory");
+      for (int i = 0; i < this.main.size(); i++) {
+         ItemStack stack = this.main.get(i);
+         writeItemTag(levelRegistryAccess, stack, nbtList, i);
+      }
+   
+      // armor
+      for (int ix = 0; ix < this.armor.size(); ix++) {
+         ItemStack stack = this.armor.get(ix);
+         writeItemTag(levelRegistryAccess, stack, nbtList, ix + 100);
+      }
+   
+      // offHand
+      for (int ixx = 0; ixx < this.offHand.size(); ixx++) {
+         ItemStack stack = this.offHand.get(ixx);
+         writeItemTag(levelRegistryAccess, stack, nbtList, ixx + 150);
+      }
+   
+      LOGGER.info("DONE writeNBT inventory");
+      return nbtList;
+   }
    public void readNbt(HolderLookup.Provider levelRegistryAccess, ListTag nbtList) {
+      LOGGER.info("writeNBT inventory");
       this.main.clear();
       this.armor.clear();
       this.offHand.clear();
-
+      
       for (int i = 0; i < nbtList.size(); i++) {
          CompoundTag nbtCompound = nbtList.getCompound(i);
          int j = nbtCompound.getByte("Slot") & 255;
          ItemStack itemStack = ItemStack.parseOptional(levelRegistryAccess, nbtCompound);
          if (!itemStack.isEmpty()) {
+            LOGGER.info("Reading stack {}", itemStack);
             if (j >= 0 && j < this.main.size()) {
                this.main.set(j, itemStack);
             } else if (j >= 100 && j < this.armor.size() + 100) {
@@ -412,6 +433,7 @@ public class LivingEntityInventory implements Container, Nameable {
             }
          }
       }
+      LOGGER.info("DONE writeNBT inventory");
    }
 
    public int getContainerSize() {
