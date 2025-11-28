@@ -22,6 +22,9 @@ public final class PlayerEngineClient {
       STTUtils.onInitialize();
       NetworkManager.registerReceiver(NetworkManager.Side.S2C,
             ResourceLocation.fromNamespaceAndPath("playerengine", "stream_tts"), (buf, context) -> {
+               if(!enabledTTS){
+                  return;
+               }
                String clientId = buf.readUtf();
                String token = buf.readUtf();
                String text = buf.readUtf();
