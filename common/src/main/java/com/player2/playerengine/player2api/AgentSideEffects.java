@@ -110,7 +110,7 @@ public class AgentSideEffects {
         });
     }
 
-    private static void broadcastChatToPlayer(MinecraftServer server, String message, ServerPlayer player) {
+    public static void broadcastChatToPlayer(MinecraftServer server, String message, ServerPlayer player) {
         player.displayClientMessage(Component.literal(message), false);
     }
     private static void broadcastErrorMsgToPlayer(MinecraftServer server, String message, ServerPlayer player) {

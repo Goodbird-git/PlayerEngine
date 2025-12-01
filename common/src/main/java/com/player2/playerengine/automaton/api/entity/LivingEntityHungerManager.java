@@ -37,7 +37,7 @@ public class LivingEntityHungerManager {
       this.foodSaturationLevel = Math.min(this.foodSaturationLevel + food * saturationModifier * 2.0F, (float)this.foodLevel);
    }
 
-   public void eat(Item item, ItemStack stack) {
+   public void eat(Item item) {
       if (item.isEdible()) {
          FoodProperties foodComponent = item.getFoodProperties();
          this.add(foodComponent.getNutrition(), foodComponent.getSaturationModifier());

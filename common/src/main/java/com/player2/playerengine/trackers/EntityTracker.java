@@ -13,6 +13,7 @@ import com.player2.playerengine.util.helpers.ProjectileHelper;
 import com.player2.playerengine.util.helpers.WorldHelper;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -95,12 +96,38 @@ public class EntityTracker extends Tracker {
 
       return this.getClosestItemDrop(position, acceptPredicate, tempTargetList);
    }
+   private Optional<ItemEntity> getClosestItemDropWithoutItemTarget(Vec3 position, Predicate<ItemEntity> acceptPredicate) {
+    Collection<Item> items = new ArrayList<>(this.itemDropLocations.keySet());
+
+    ItemEntity closestEntity = null;
+    float minCost = Float.POSITIVE_INFINITY;
+
+    for (Item item : items) {
+        if (this.itemDropped(item)) {
+            Collection<ItemEntity> entities = this.itemDropLocations.get(item);
+            if (entities == null) continue;
+            for (ItemEntity entity : entities) {
+                if (!this.entityBlacklist.unreachable(entity)
+                        && entity.getItem().getItem().equals(item)
+                        && acceptPredicate.test(entity)) {
+                    float cost = (float) BaritoneHelper.calculateGenericHeuristic(position, entity.position());
+                    if (cost < minCost) {
+                        minCost = cost;
+                        closestEntity = entity;
+                    }
+                }
+            }
+        }
+    }
+
+    return Optional.ofNullable(closestEntity);
+   }
 
    public Optional<ItemEntity> getClosestItemDrop(Vec3 position, Predicate<ItemEntity> acceptPredicate, ItemTarget... targets) {
       this.ensureUpdated();
       if (targets.length == 0) {
-         Debug.logError("You asked for the drop position of zero items... Most likely a typo.");
-         return Optional.empty();
+         //Debug.logError("You asked for the drop position of zero items... Most likely a typo.");
+         return this.getClosestItemDropWithoutItemTarget(position, acceptPredicate);
       } else if (!this.itemDropped(targets)) {
          return Optional.empty();
       } else {

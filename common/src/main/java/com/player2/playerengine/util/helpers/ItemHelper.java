@@ -777,8 +777,11 @@ public class ItemHelper {
                   this.put(Items.POTATO, Items.BAKED_POTATO);
             }
       };
+      
       public static final Item[] RAW_FOODS = cookableFoodMap.keySet().toArray(Item[]::new);
       public static final Item[] COOKED_FOODS = cookableFoodMap.values().toArray(Item[]::new);
+      public static final Item[] OTHER_FOODS = new Item[] { Items.BEETROOT, Items.BEETROOT_SOUP, Items.CARROT, Items.ENCHANTED_GOLDEN_APPLE, Items.BREAD, Items.APPLE, Items.COOKIE, Items.DRIED_KELP, Items.GOLDEN_APPLE, Items.GOLDEN_CARROT, Items.MELON_SLICE, Items.MUSHROOM_STEW, Items.PUMPKIN_PIE, Items.RABBIT_STEW };
+      public static final Item[] FOODS = Stream.of(RAW_FOODS, COOKED_FOODS, OTHER_FOODS).flatMap(Arrays::stream).toArray(Item[]::new);
       private static Map<Item, Integer> fuelTimeMap = null;
 
       public static String stripItemName(Item item) {
@@ -1055,4 +1058,15 @@ public class ItemHelper {
                   return this.planks == Items.CRIMSON_PLANKS || this.planks == Items.WARPED_PLANKS;
             }
       }
+
+      public static Optional<Item> getItemFromString(String query, Item[] itemsToPickFrom) {
+          for (Item item : itemsToPickFrom) {
+              if (stripItemName(item).equalsIgnoreCase(query)) {
+                  return Optional.of(item);
+              }
+          }
+          return Optional.empty();
+      }
+
+
 }
