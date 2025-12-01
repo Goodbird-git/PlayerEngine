@@ -19,6 +19,9 @@ public final class PlayerEngineClient {
       EntityRendererRegistry.register(PlayerEngine.FISHING_BOBBER, CustomFishingBobberRenderer::new);
       STTUtils.onInitialize();
       NetworkManager.registerReceiver(NetworkManager.Side.S2C, new ResourceLocation("playerengine", "stream_tts"), (buf, context) -> {
+         if(!enabledTTS){
+                  return;
+         }
          String clientId = buf.readUtf();
          String token = buf.readUtf();
          String text = buf.readUtf();
