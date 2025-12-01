@@ -1,24 +1,27 @@
 package com.player2.playerengine.trackers;
 
-import com.player2.playerengine.util.Debug;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map.Entry;
+import java.util.Optional;
+import java.util.function.Predicate;
+
 import com.player2.playerengine.eventbus.EventBus;
 import com.player2.playerengine.eventbus.events.PlayerCollidedWithEntityEvent;
 import com.player2.playerengine.mixins.PersistentProjectileEntityAccessor;
 import com.player2.playerengine.trackers.blacklisting.EntityLocateBlacklist;
+import com.player2.playerengine.util.Debug;
 import com.player2.playerengine.util.ItemTarget;
 import com.player2.playerengine.util.baritone.CachedProjectile;
 import com.player2.playerengine.util.helpers.BaritoneHelper;
 import com.player2.playerengine.util.helpers.EntityHelper;
 import com.player2.playerengine.util.helpers.ProjectileHelper;
 import com.player2.playerengine.util.helpers.WorldHelper;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Map.Entry;
-import java.util.function.Predicate;
+
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
@@ -100,7 +103,7 @@ public class EntityTracker extends Tracker {
       this.ensureUpdated();
       if (targets.length == 0) {
          Debug.logError("You asked for the drop position of zero items... Most likely a typo.");
-         return Optional.empty();
+         return this.getClosestItemDropWithoutItemTarget(position, acceptPredicate);
       } else if (!this.itemDropped(targets)) {
          return Optional.empty();
       } else {
@@ -126,6 +129,32 @@ public class EntityTracker extends Tracker {
          return Optional.ofNullable(closestEntity);
       }
    }
+   private Optional<ItemEntity> getClosestItemDropWithoutItemTarget(Vec3 position, Predicate<ItemEntity> acceptPredicate) {
+    Collection<Item> items = new ArrayList<>(this.itemDropLocations.keySet());
+
+    ItemEntity closestEntity = null;
+    float minCost = Float.POSITIVE_INFINITY;
+
+    for (Item item : items) {
+        if (this.itemDropped(item)) {
+            Collection<ItemEntity> entities = this.itemDropLocations.get(item);
+            if (entities == null) continue;
+            for (ItemEntity entity : entities) {
+                if (!this.entityBlacklist.unreachable(entity)
+                        && entity.getItem().getItem().equals(item)
+                        && acceptPredicate.test(entity)) {
+                    float cost = (float) BaritoneHelper.calculateGenericHeuristic(position, entity.position());
+                    if (cost < minCost) {
+                        minCost = cost;
+                        closestEntity = entity;
+                    }
+                }
+            }
+        }
+    }
+
+    return Optional.ofNullable(closestEntity);
+}
 
    private Class[] parsePossiblyNullEntityTypes(Class... entityTypes) {
       return entityTypes == null ? this.entityMap.keySet().toArray(Class[]::new) : entityTypes;
