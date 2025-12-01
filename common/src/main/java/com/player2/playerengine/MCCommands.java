@@ -3,12 +3,13 @@ package com.player2.playerengine;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.player2.playerengine.player2api.auth.AuthenticationManager;
-
 import com.player2.playerengine.player2api.Player2APIService;
+import com.player2.playerengine.player2api.AgentSideEffects;
+
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.server.MinecraftServer;
-
+import net.minecraft.server.level.ServerPlayer;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import dev.architectury.event.events.common.LifecycleEvent;
@@ -33,9 +34,20 @@ public class MCCommands {
     private static void registerFromDispatch(CommandDispatcher<CommandSourceStack> dispatcher) {
         dispatcher.register(
                 Commands.literal("playerengine")
-                        .then(registerRelog()));
+                        .then(registerRelog())
+                        .then(registerHelp()));
     }
 
+
+    private static LiteralArgumentBuilder<CommandSourceStack> registerHelp() {
+        return Commands.literal("help")
+                .executes(context -> {
+                    LOGGER.info("help command");
+                    Player player = context.getSource().getPlayer();
+                    AgentSideEffects.broadcastChatToPlayer(player.level().getServer(), "help: TODO: fillin ", (ServerPlayer) player);
+                    return 1;
+                });
+    }
     private static LiteralArgumentBuilder<CommandSourceStack> registerRelog() {
         return Commands.literal("relog")
                 .executes(context -> {

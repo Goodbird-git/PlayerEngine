@@ -31,6 +31,7 @@ public class PlayerEngineCommands {
                   new SetAIBridgeEnabledCommand(),
                   new FarmCommand(),
                   new EatFoodCommand(),
+                  new PickupDropsCommand(),
                   new FishCommand());
    }
 }
