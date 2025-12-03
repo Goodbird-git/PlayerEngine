@@ -380,7 +380,8 @@ public class AltoClefController {
       return this.owner;
    }
    public String getOwnerUsername(){
-      return getOwner().getName().getString();
+      Player owner = getOwner();
+      return owner != null ? owner.getName().getString() : "Unknown";
    }
 
    public void setOwner(Player owner) {

@@ -7,7 +7,7 @@ import net.minecraftforge.fml.common.Mod;
 @Mod.EventBusSubscriber(modid="automatone")
 public class ForgeEventHandler {
     @SubscribeEvent
-    public void onChatMessage(ServerChatEvent evt){
+    public static void onChatMessage(ServerChatEvent evt){
         EventQueueManager.onUserChatMessage(new Event.UserMessage(evt.getMessage().getString(), evt.getUsername()));
     }
 }

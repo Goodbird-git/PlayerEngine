@@ -17,63 +17,45 @@
 
 package altoclef.eventbus;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Consumer;
-import net.minecraft.util.Tuple;
 
+/**
+ * Thread-safe event bus for publishing and subscribing to events.
+ * Uses CopyOnWriteArrayList to allow safe iteration during publish
+ * while subscriptions may be added/removed from other threads.
+ */
 public class EventBus {
-   private static final HashMap<Class, List<Subscription>> topics = new HashMap<>();
-   private static final List<Tuple<Class, Subscription>> toAdd = new ArrayList<>();
-   private static boolean lock;
+   private static final ConcurrentHashMap<Class<?>, CopyOnWriteArrayList<Subscription<?>>> topics = new ConcurrentHashMap<>();
 
    public static <T> void publish(T event) {
       Class<?> type = event.getClass();
+      CopyOnWriteArrayList<Subscription<?>> subscribers = topics.get(type);
 
-      for (Tuple<Class, Subscription> toAdd : EventBus.toAdd) {
-         subscribeInternal((Class<T>)toAdd.getA(), (Subscription<T>)toAdd.getB());
-      }
-
-      EventBus.toAdd.clear();
-      if (topics.containsKey(type)) {
-         List<Subscription> subscribers = topics.get(type);
-         List<Subscription> toDelete = new ArrayList<>();
-         lock = true;
-
-         for (Subscription<T> subRaw : subscribers) {
+      if (subscribers != null) {
+         for (Subscription<?> subRaw : subscribers) {
             try {
                if (subRaw.shouldDelete()) {
-                  toDelete.add(subRaw);
+                  // CopyOnWriteArrayList allows safe removal during iteration
+                  subscribers.remove(subRaw);
                } else {
-                  subRaw.accept(event);
+                  @SuppressWarnings("unchecked")
+                  Subscription<T> sub = (Subscription<T>) subRaw;
+                  sub.accept(event);
                }
-            } catch (ClassCastException var7) {
+            } catch (ClassCastException e) {
                System.err.println("TRIED PUBLISHING MISMAPPED EVENT: " + event);
-               var7.printStackTrace();
+               e.printStackTrace();
             }
          }
-
-         lock = false;
       }
-   }
-
-   private static <T> void subscribeInternal(Class<T> type, Subscription<T> sub) {
-      if (!topics.containsKey(type)) {
-         topics.put(type, new ArrayList<>());
-      }
-
-      topics.get(type).add(sub);
    }
 
    public static <T> Subscription<T> subscribe(Class<T> type, Consumer<T> consumeEvent) {
       Subscription<T> sub = new Subscription<>(consumeEvent);
-      if (lock) {
-         toAdd.add(new Tuple(type, sub));
-      } else {
-         subscribeInternal(type, sub);
-      }
-
+      // computeIfAbsent is atomic - ensures thread-safe initialization
+      topics.computeIfAbsent(type, k -> new CopyOnWriteArrayList<>()).add(sub);
       return sub;
    }
 
