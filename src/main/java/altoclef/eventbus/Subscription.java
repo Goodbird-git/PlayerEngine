@@ -21,7 +21,7 @@ import java.util.function.Consumer;
 
 public class Subscription<T> {
    private final Consumer<T> callback;
-   private boolean shouldDelete;
+   private volatile boolean shouldDelete;
 
    public Subscription(Consumer<T> callback) {
       this.callback = callback;
