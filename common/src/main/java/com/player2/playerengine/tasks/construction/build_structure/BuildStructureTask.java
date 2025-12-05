@@ -25,10 +25,13 @@ import com.player2.playerengine.player2api.LLMCompleter;
 import com.player2.playerengine.player2api.Player2APIService;
 import com.player2.playerengine.player2api.Prompts;
 import com.player2.playerengine.tasks.base.Task;
+import com.player2.playerengine.util.time.TimerGame;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
 
 public class BuildStructureTask extends Task {
     private static final int maxNumErrors = 2;
@@ -48,6 +51,10 @@ public class BuildStructureTask extends Task {
         private Schematic schematic = null;
         private boolean finished = false;
 
+        private BlockPos origin;
+
+        private TimerGame blockPlaceTimer = new TimerGame(0.5f);
+
         public boolean hasSchematic() {
             return schematic != null;
         }
@@ -56,6 +63,7 @@ public class BuildStructureTask extends Task {
         protected void onStart() {
             finished = false;
             schematic = null;
+            origin = mod.getPlayer().blockPosition();
 
             String query = description;
 
@@ -122,18 +130,36 @@ public class BuildStructureTask extends Task {
                 return null;
             }
 
+            if (!blockPlaceTimer.elapsed()) {
+                // Wait for block place delay
+                return null;
+            }
+
             for (int xx = 0; xx < schematic.width(); ++xx) {
                 for (int zz = 0; zz < schematic.length(); ++zz) {
                     for (int yy = 0; yy < schematic.height(); ++yy) {
-                        SchematicBlock b = schematic.block(xx, yy, zz);
-                        // BlockPos worldPos =
-                        // TODO: What is the origin?
-                        // TODO: Keep it simple, just setblock with a timeout if block isn't set
+                        SchematicBlock desiredSchematicState = schematic.block(xx, yy, zz);
+                        ResourceLocation desiredSchematicId = ResourceLocation.fromNamespaceAndPath("minecraft", desiredSchematicState.block());
+                        Block desiredSchematicBlock = BuiltInRegistries.BLOCK.get(desiredSchematicId);
+
+                        BlockPos worldPos = origin.offset(xx, zz, yy);
+                        BlockState currentState = mod.getWorld().getBlockState(worldPos);
+
+                        if (!currentState.getBlock().getName().equals(desiredSchematicBlock.getName())) {
+                            LOGGER.debug("REPLACING BLOCK({}): {} -> {}", worldPos, currentState.getBlock().getName(), desiredSchematicBlock.getName());
+                            mod.getWorld().setBlock(worldPos, 
+                            desiredSchematicBlock.defaultBlockState(), 3);
+                            // block place delay
+                            blockPlaceTimer.reset();
+                            return null;
+                        }
                     }
                 }
             }
 
-            // TODO: If all blocks are set, finished = true
+            // All blocks are set, we are done.
+            finished = true;
+
 
             return null;
         }
@@ -278,7 +304,7 @@ public class BuildStructureTask extends Task {
 
     @Override
     protected void onStart() {
-        actuallyRunningTask = new RequestLLMCode();
+        actuallyRunningTask = new BuildSchematicFromDescriptionTask();
     }
 
     @Override
@@ -294,6 +320,18 @@ public class BuildStructureTask extends Task {
         }
         // ---------- now task is finished, switch to next task: -------
 
+        if (actuallyRunningTask instanceof BuildSchematicFromDescriptionTask) {
+            BuildSchematicFromDescriptionTask buildSchematicTask = (BuildSchematicFromDescriptionTask) actuallyRunningTask;
+            if (buildSchematicTask.hasSchematic()) {
+                // We finished building and are done
+                isDone = true;
+                actuallyRunningTask = null;
+            } else {
+                // We STOPPED building, move on to request LLM code
+                actuallyRunningTask = new RequestLLMCode();
+            }
+            return actuallyRunningTask;
+        }
         if (actuallyRunningTask instanceof RequestLLMCode) {
             LOGGER.info("Requesting llm code for description={}", description);
             Either<String, String> result = ((RequestLLMCode) actuallyRunningTask).llmResult.get();
