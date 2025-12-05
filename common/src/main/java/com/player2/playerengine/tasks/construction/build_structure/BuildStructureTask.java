@@ -1,5 +1,9 @@
 package com.player2.playerengine.tasks.construction.build_structure;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.util.Base64;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -7,6 +11,12 @@ import java.util.concurrent.Executors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import net.sandrohc.schematic4j.SchematicLoader;
+import net.sandrohc.schematic4j.exception.ParsingException;
+import net.sandrohc.schematic4j.schematic.Schematic;
+import net.sandrohc.schematic4j.schematic.types.SchematicBlock;
+
+import com.google.gson.JsonObject;
 import com.mojang.datafixers.util.Either;
 
 import com.player2.playerengine.PlayerEngineController;
@@ -32,6 +42,121 @@ public class BuildStructureTask extends Task {
     private Task actuallyRunningTask;
     private ConversationHistory history;
     private LLMCompleter completer;
+
+    private class BuildSchematicFromDescriptionTask extends Task {
+
+        private Schematic schematic = null;
+        private boolean finished = false;
+
+        public boolean hasSchematic() {
+            return schematic != null;
+        }
+
+        @Override
+        protected void onStart() {
+            finished = false;
+            schematic = null;
+
+            String query = description;
+
+            LOGGER.debug("Searching Schematic: {}", query);
+
+            List<JsonObject> schematics = service.searchSchematics(query);
+
+            LOGGER.debug("Got {} results", schematics.size());
+
+            if (schematics.size() == 0) {
+                // no schematics: Nothing.
+                finished = true;
+                return;
+            }
+
+
+            ConversationHistory selectPromptHistory = new ConversationHistory(Prompts.getSelectSchematicPrompt());
+            StringBuilder result = new StringBuilder("{");
+            result.append(String.join(",\n", schematics.stream().map(s -> s.toString()).toList()));
+            result.append("\n}");
+
+            selectPromptHistory.addUserMessage(
+                    result.toString(),
+                    service);
+
+            LOGGER.debug("Querying LLM to pick best schematic...");
+
+            completer.processToString(service, selectPromptHistory, schematicID -> {
+
+                LOGGER.debug("LLM Picked best schematic id: {}", schematicID);
+
+                String b64String = service.getSchematicBinary(schematicID);
+
+                LOGGER.debug("Got schematic b64: {}", b64String);
+
+                if (b64String == null || b64String.length() == 0) {
+                    finished = true;
+                    return;
+                }
+
+                ByteArrayInputStream input = new ByteArrayInputStream(Base64.getDecoder().decode(b64String));
+
+                // Load and store the schematic
+                try {
+                    schematic = SchematicLoader.load(input);
+                    LOGGER.debug("Loaded schematic successfully! {}x{}x{}", schematic.width(), schematic.height(), schematic.length());
+                } catch (ParsingException | IOException e) {
+                    // Fail
+                    e.printStackTrace();
+                    finished = true;
+                    return;
+                }
+
+            }, errStr -> {
+                LOGGER.info("LLM Transport Error={}", errStr);
+                finished = true;
+            }, false);
+        }
+
+        @Override
+        protected Task onTick() {
+            if (schematic == null) {
+                // Wait for schematic to load
+                return null;
+            }
+
+            for (int xx = 0; xx < schematic.width(); ++xx) {
+                for (int zz = 0; zz < schematic.length(); ++zz) {
+                    for (int yy = 0; yy < schematic.height(); ++yy) {
+                        SchematicBlock b = schematic.block(xx, yy, zz);
+                        // BlockPos worldPos =
+                        // TODO: What is the origin?
+                        // TODO: Keep it simple, just setblock with a timeout if block isn't set
+                    }
+                }
+            }
+
+            // TODO: If all blocks are set, finished = true
+
+            return null;
+        }
+
+        @Override
+        protected void onStop(Task var1) {
+        }
+
+        @Override
+        protected boolean isEqual(Task var1) {
+            return var1 instanceof BuildSchematicFromDescriptionTask;
+        }
+
+        @Override
+        protected String toDebugString() {
+            return String.format("Building structure from schematic search: (%s)", description);
+        }
+
+        @Override
+        public boolean isFinished() {
+            return finished;
+        }
+    }
 
     private class RequestLLMCode extends Task {
         // outer option: isDone, either: (left=code (success), right=errStr)

@@ -356,4 +356,77 @@ public class Prompts {
     return buildStructurePrompt;
   }
 
+  private static final String selectSchematicPrompt = """
+        Given the following schematics, select the ID of the schematic that most clearly matches the description and has the highest quality.
+
+        Your input is JSON, and you can use the name, description, and download count fields to determine the best match.
+        Download count can be used to guess that something is of higher quality. Use this when there are a lot of similar results and avoid results with very low downloads.
+        Your output MUST be one of the "id" fields, without quotes. Do not output quotes in the reply, it should ONLY contain alphanumeric and dash characters.
+
+        EXAMPLES:
+
+        INPUT:
+          {
+            "description": "A large mansion made out of wood.",
+            "options": [
+              {
+                "name": "empire state building",
+                "description": "The empire state building in New York",
+                "id": "01913299-8e85-7a8b-8764-e496315e217b"
+              },
+              {
+                "name": "brick apartment",
+                "description": "A median sized apartment building made of bricks",
+                "id": "01913299-c266-7e72-961c-b382af552cfb"
+              },
+              {
+                "name": "ship",
+                "description": "A large wooden ship",
+                "id": "01913299-d777-75ab-b69c-1acdba677003"
+              },
+              {
+                "name": "cozy house",
+                "description": "A three story house with a spiral staircase, a big bed, and lots of goodies, fancier than the houses from buildSimpleHouse function but takes a lot longer to build",
+                "id": "01913299-eb5f-7287-86c4-d0c1b3902e4b"
+              },
+              {
+                "name": "fishing hut",
+                "description": "A fishing hut, a small wooden house with a dock, bot need to build it next to water block, find water block first then build",
+                "id": "01913786-ef38-756b-b731-5fe0c60e0526"
+              }
+            ]
+          }
+        OUTPUT:
+          01913299-eb5f-7287-86c4-d0c1b3902e4b
+
+        REASONING (NOT part of output, here so you understand why we picked this id):
+          You reply with the ID of the cozy house because it most closely matches a large house made out of wood.
+
+        INPUT:
+          {
+            "description": "A boat.",
+            "options": [
+              {
+                "name": "small yacht",
+                "description": "A modern small yacht",
+                "id": "0191329a-a7e0-74df-9ab1-880217d10075"
+              },
+              {
+                "name": "ship",
+                "description": "A large wooden ship",
+                "id": "01913299-d777-75ab-b69c-1acdba677003"
+              },
+            ]
+          }
+        OUTPUT:
+          0191329a-a7e0-74df-9ab1-880217d10075
+
+        REASONING (NOT part of output, here so you understand why we picked this id):
+          The description was a boat. Both options are boats and equally fit the description, so just pick the one that is easier to make. A small yacht is probably easier to build than a large boat.
+      """;
+
+
+  public static String getSelectSchematicPrompt() {
+    return selectSchematicPrompt;
+  }
 }
