@@ -139,14 +139,18 @@ public class BuildStructureTask extends Task {
                 for (int zz = 0; zz < schematic.length(); ++zz) {
                     for (int yy = 0; yy < schematic.height(); ++yy) {
                         SchematicBlock desiredSchematicState = schematic.block(xx, yy, zz);
-                        ResourceLocation desiredSchematicId = ResourceLocation.fromNamespaceAndPath("minecraft", desiredSchematicState.block());
+                        String blockName = desiredSchematicState.block();
+                        while (blockName.startsWith("minecraft:")) {
+                            blockName = blockName.substring("minecraft:".length());
+                        }
+                        ResourceLocation desiredSchematicId = ResourceLocation.fromNamespaceAndPath("minecraft", blockName);
                         Block desiredSchematicBlock = BuiltInRegistries.BLOCK.get(desiredSchematicId);
 
                         BlockPos worldPos = origin.offset(xx, zz, yy);
                         BlockState currentState = mod.getWorld().getBlockState(worldPos);
 
                         if (!currentState.getBlock().getName().equals(desiredSchematicBlock.getName())) {
-                            LOGGER.debug("REPLACING BLOCK({}): {} -> {}", worldPos, currentState.getBlock().getName(), desiredSchematicBlock.getName());
+                            LOGGER.info("REPLACING BLOCK({}): {} -> {}", worldPos, currentState.getBlock().getName(), desiredSchematicBlock.getName());
                             mod.getWorld().setBlock(worldPos, 
                             desiredSchematicBlock.defaultBlockState(), 3);
                             // block place delay
