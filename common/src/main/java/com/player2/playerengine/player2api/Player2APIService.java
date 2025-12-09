@@ -224,7 +224,7 @@ public class Player2APIService {
     */
    public String getSchematicBinary(String schematicId) {
       try {
-         Map<String, JsonElement> responseMap = Player2HTTPUtils.sendRequest(controller.getOwner(), clientId, "/v1/schematics/" + schematicId, false, null);
+         Map<String, JsonElement> responseMap = Player2HTTPUtils.sendRequest(controller.getOwner(), clientId, "/v1/minecraft/schematics/" + schematicId, false, null);
          JsonElement dataJsonElement = responseMap.get("data");
          if (dataJsonElement != null && dataJsonElement.isJsonPrimitive()) {
             return dataJsonElement.getAsString();

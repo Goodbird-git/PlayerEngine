@@ -363,6 +363,8 @@ public class Prompts {
         Download count can be used to guess that something is of higher quality. Use this when there are a lot of similar results and avoid results with very low downloads.
         Your output MUST be one of the "id" fields, without quotes. Do not output quotes in the reply, it should ONLY contain alphanumeric and dash characters.
 
+        FEEL FREE to pick a DIFFERENT ID from the one's we have below, the ones below are just examples.
+
         EXAMPLES:
 
         INPUT:

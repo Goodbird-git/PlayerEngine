@@ -21,7 +21,6 @@ import net.sandrohc.schematic4j.schematic.types.SchematicBlock;
 
 import com.google.gson.JsonObject;
 import com.mojang.datafixers.util.Either;
-
 import com.player2.playerengine.PlayerEngineController;
 import com.player2.playerengine.player2api.ConversationHistory;
 import com.player2.playerengine.player2api.LLMCompleter;
@@ -81,11 +80,11 @@ public class BuildStructureTask extends Task {
 
             String query = schematicQuery;
 
-            LOGGER.debug("Searching Schematic: {}", query);
+            LOGGER.info("Searching Schematic: {}", query);
 
             List<JsonObject> schematics = service.searchSchematics(query);
 
-            LOGGER.debug("Got {} results", schematics.size());
+            LOGGER.info("Got {} results", schematics.size());
 
             if (schematics.size() == 0) {
                 // no schematics: Nothing.
@@ -103,11 +102,11 @@ public class BuildStructureTask extends Task {
                     result.toString(),
                     service);
 
-            LOGGER.debug("Querying LLM to pick best schematic...");
+            LOGGER.info("Querying LLM to pick best schematic...");
 
             completer.processToString(service, selectPromptHistory, schematicID -> {
 
-                LOGGER.debug("LLM Picked best schematic id: {}", schematicID);
+                LOGGER.info("LLM Picked best schematic id: {}", schematicID);
 
                 String b64String = service.getSchematicBinary(schematicID);
 
@@ -123,7 +122,7 @@ public class BuildStructureTask extends Task {
                 // Load and store the schematic
                 try {
                     schematic = SchematicLoader.load(input);
-                    LOGGER.debug("Loaded schematic successfully! {}x{}x{}", schematic.width(), schematic.height(), schematic.length());
+                    LOGGER.info("Loaded schematic successfully! {}x{}x{}", schematic.width(), schematic.height(), schematic.length());
                 } catch (ParsingException | IOException e) {
                     // Fail
                     e.printStackTrace();
@@ -177,16 +176,16 @@ public class BuildStructureTask extends Task {
                     return null;
                 }
 
-                        SchematicBlock desiredSchematicState = schematic.block(xx, yy, zz);
-                        String blockName = desiredSchematicState.block();
-                        while (blockName.startsWith("minecraft:")) {
-                            blockName = blockName.substring("minecraft:".length());
-                        }
-                        ResourceLocation desiredSchematicId = ResourceLocation.fromNamespaceAndPath("minecraft", blockName);
-                        Block desiredSchematicBlock = BuiltInRegistries.BLOCK.get(desiredSchematicId);
+                SchematicBlock desiredSchematicState = schematic.block(xx, yy, zz);
+                String blockName = desiredSchematicState.block();
+                while (blockName.startsWith("minecraft:")) {
+                    blockName = blockName.substring("minecraft:".length());
+                }
+                ResourceLocation desiredSchematicId = ResourceLocation.fromNamespaceAndPath("minecraft", blockName);
+                Block desiredSchematicBlock = BuiltInRegistries.BLOCK.get(desiredSchematicId);
 
                 BlockPos worldPos = origin.offset(xx - xs / 2 , yy, zz - zs / 2);
-                        BlockState currentState = mod.getWorld().getBlockState(worldPos);
+                BlockState currentState = mod.getWorld().getBlockState(worldPos);
 
                 BlockState desiredState = desiredSchematicBlock.defaultBlockState();
                 // Apply properties
@@ -220,10 +219,10 @@ public class BuildStructureTask extends Task {
 
                 if (!currentState.getBlock().getName().equals(desiredSchematicBlock.getName())) {
                     LOGGER.info("ASDF REPLACING BLOCK({}): {} -> {} ({})", worldPos, currentState.getBlock().getName(), desiredState.toString());
-                            mod.getWorld().setBlock(worldPos, 
+                    mod.getWorld().setBlock(worldPos, 
                     desiredState, 3);
-                            // block place delay
-                            blockPlaceTimer.reset();
+                    // block place delay
+                    blockPlaceTimer.reset();
                     foundInvalidBlock = true;
                 } else {
                     LOGGER.info("ASDF gucci {}", worldPos);
