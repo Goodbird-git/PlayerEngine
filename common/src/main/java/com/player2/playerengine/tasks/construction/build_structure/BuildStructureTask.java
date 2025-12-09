@@ -3,7 +3,10 @@ package com.player2.playerengine.tasks.construction.build_structure;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.Base64;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -30,15 +33,24 @@ import com.player2.playerengine.util.time.TimerGame;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.BooleanProperty;
+import net.minecraft.world.level.block.state.properties.EnumProperty;
+import net.minecraft.world.level.block.state.properties.IntegerProperty;
+import net.minecraft.world.level.block.state.properties.Property;
 
 public class BuildStructureTask extends Task {
     private static final int maxNumErrors = 2;
     private static Logger LOGGER = LogManager.getLogger();
 
     private boolean isDone = false;
+
+    private BlockPos buildPosition;
+    private String schematicQuery;
     private String description;
+
     private PlayerEngineController mod;
     private Player2APIService service;
     private int numErrors;
@@ -53,7 +65,8 @@ public class BuildStructureTask extends Task {
 
         private BlockPos origin;
 
-        private TimerGame blockPlaceTimer = new TimerGame(0.5f);
+        private TimerGame blockPlaceTimer = new TimerGame(0.1f);
+        private int blockPlaceProgress;
 
         public boolean hasSchematic() {
             return schematic != null;
@@ -63,9 +76,10 @@ public class BuildStructureTask extends Task {
         protected void onStart() {
             finished = false;
             schematic = null;
-            origin = mod.getPlayer().blockPosition();
+            blockPlaceProgress = 0;
+            origin = buildPosition;// mod.getPlayer().blockPosition();
 
-            String query = description;
+            String query = schematicQuery;
 
             LOGGER.debug("Searching Schematic: {}", query);
 
@@ -123,6 +137,19 @@ public class BuildStructureTask extends Task {
             }, false);
         }
 
+        private static <T extends Enum<T> & StringRepresentable & Comparable<T>> BlockState setEnumProp(EnumProperty<T> enumProp, BlockState blockState, String value) {
+            // Find the desired value
+            for (var possible : enumProp.getPossibleValues()) {
+                T possibleEnum = (T) possible;
+                if (possibleEnum.name().toLowerCase().equals(value)) {
+                    return blockState.setValue(enumProp, possibleEnum);
+                }
+            }
+            // We did not find a valid enum!
+            LOGGER.warn("Unable to find enum prop that matched the value \"{}\" to any of following enums: [{}]", value, String.join(", ",enumProp.getPossibleValues().stream().map(x -> "\"" + x.toString() + "\"").toList()));
+            return blockState;
+        }
+
         @Override
         protected Task onTick() {
             if (schematic == null) {
@@ -135,9 +162,21 @@ public class BuildStructureTask extends Task {
                 return null;
             }
 
-            for (int xx = 0; xx < schematic.width(); ++xx) {
-                for (int zz = 0; zz < schematic.length(); ++zz) {
-                    for (int yy = 0; yy < schematic.height(); ++yy) {
+            boolean foundInvalidBlock = false;
+            while (!foundInvalidBlock) {
+                // one at a time, don't repeat since some blocks may not place correctly and we don't want to get stuck
+                int xs = schematic.width();
+                int zs = schematic.length();
+                int ys = schematic.height();
+                int xx = blockPlaceProgress % xs;
+                int zz = (blockPlaceProgress / xs) % zs;
+                int yy = (blockPlaceProgress) / (zs * xs);
+                // We placed the last block
+                if (blockPlaceProgress > xs*zs*ys) {
+                    finished = true;
+                    return null;
+                }
+
                         SchematicBlock desiredSchematicState = schematic.block(xx, yy, zz);
                         String blockName = desiredSchematicState.block();
                         while (blockName.startsWith("minecraft:")) {
@@ -146,25 +185,54 @@ public class BuildStructureTask extends Task {
                         ResourceLocation desiredSchematicId = ResourceLocation.fromNamespaceAndPath("minecraft", blockName);
                         Block desiredSchematicBlock = BuiltInRegistries.BLOCK.get(desiredSchematicId);
 
-                        BlockPos worldPos = origin.offset(xx, zz, yy);
+                BlockPos worldPos = origin.offset(xx - xs / 2 , yy, zz - zs / 2);
                         BlockState currentState = mod.getWorld().getBlockState(worldPos);
 
-                        if (!currentState.getBlock().getName().equals(desiredSchematicBlock.getName())) {
-                            LOGGER.info("REPLACING BLOCK({}): {} -> {}", worldPos, currentState.getBlock().getName(), desiredSchematicBlock.getName());
+                BlockState desiredState = desiredSchematicBlock.defaultBlockState();
+                // Apply properties
+                Map<String, Property<?>> props = new HashMap<>();
+                for (Property<?> p : desiredState.getProperties()) {
+                    props.put(p.getName().toLowerCase(), p);
+                }
+                for(Entry<String, String> propEntry : desiredSchematicState.states().entrySet()) {
+                    String propKey = propEntry.getKey().toLowerCase();
+                    String propValue = propEntry.getValue();
+                    Property<?> prop = props.get(propKey);
+                    if (prop == null) {
+                        LOGGER.warn("Failed to find prop with name {} for block {}. Ignoring this prop.", propKey, desiredSchematicBlock.getName());
+                        continue;
+                    }
+                    if (prop instanceof BooleanProperty) {
+                        desiredState = desiredState.setValue((BooleanProperty)prop, Boolean.parseBoolean(propValue));
+                        continue;
+                    }
+                    if (prop instanceof IntegerProperty) {
+                        desiredState = desiredState.setValue((IntegerProperty) prop, Integer.parseInt(propValue));
+                        continue;
+                    }
+                    if (prop instanceof EnumProperty) {
+                        EnumProperty<?> enumProp = (EnumProperty<?>) prop;
+                        desiredState = setEnumProp(enumProp, desiredState, propValue);
+                        continue;
+                    }
+                    LOGGER.warn("Did not account for this type of property: {}, {} when setting {}={}. Add support for this! Ignoring this state for now.", prop.getClass().getSimpleName(), prop.toString(), propKey, propValue);
+                }
+
+                if (!currentState.getBlock().getName().equals(desiredSchematicBlock.getName())) {
+                    LOGGER.info("ASDF REPLACING BLOCK({}): {} -> {} ({})", worldPos, currentState.getBlock().getName(), desiredState.toString());
                             mod.getWorld().setBlock(worldPos, 
-                            desiredSchematicBlock.defaultBlockState(), 3);
+                    desiredState, 3);
                             // block place delay
                             blockPlaceTimer.reset();
-                            return null;
-                        }
-                    }
+                    foundInvalidBlock = true;
+                } else {
+                    LOGGER.info("ASDF gucci {}", worldPos);
                 }
+
+                blockPlaceProgress++;
             }
 
-            // All blocks are set, we are done.
-            finished = true;
-
-
+            // next frame
             return null;
         }
 
@@ -179,7 +247,7 @@ public class BuildStructureTask extends Task {
 
         @Override
         protected String toDebugString() {
-            return String.format("Building structure from schematic search: (%s)", description);
+            return String.format("Building structure at (%s) from schematic search: (%s)", buildPosition.toShortString(), description);
         }
 
         @Override
@@ -221,7 +289,7 @@ public class BuildStructureTask extends Task {
 
         @Override
         protected String toDebugString() {
-            return String.format("Thinking about how to build structure with description (%s)", description);
+            return String.format("Thinking about how to build structure at (%s) with description (%s)", buildPosition.toShortString(), description);
         }
 
         @Override
@@ -290,18 +358,20 @@ public class BuildStructureTask extends Task {
 
         @Override
         protected String toDebugString() {
-            return String.format("Currently building the structure from description (%s)", description);
+            return String.format("Currently building the structure at (%s) from description (%s)", buildPosition.toShortString(), description);
         }
     }
 
-    public BuildStructureTask(String description, PlayerEngineController mod) {
+    public BuildStructureTask(BlockPos position, String schematicQuery, String description, PlayerEngineController mod) {
+        this.buildPosition = position;
+        this.schematicQuery = schematicQuery;
         this.description = description;
         this.mod = mod;
         this.service = mod.getPlayer2APIService();
         this.numErrors = 0;
         this.history = new ConversationHistory(Prompts.getBuildStructurePrompt());
         history.addUserMessage(
-                String.format("Build with the following description: (%s)", description),
+                String.format("Build with the following description: (%s). Build at position (%s)", description, buildPosition.toShortString()),
                 service);
         this.completer = new LLMCompleter();
     }
@@ -337,7 +407,7 @@ public class BuildStructureTask extends Task {
             return actuallyRunningTask;
         }
         if (actuallyRunningTask instanceof RequestLLMCode) {
-            LOGGER.info("Requesting llm code for description={}", description);
+            LOGGER.info("Requesting llm code for pos={} description={}", buildPosition.toShortString(), description);
             Either<String, String> result = ((RequestLLMCode) actuallyRunningTask).llmResult.get();
             // set actually running task to next task:
             result.mapBoth(
@@ -399,6 +469,6 @@ public class BuildStructureTask extends Task {
 
     @Override
     protected String toDebugString() {
-        return "BuildingStructure(" + description + ")";
+        return "BuildingStructure(pos=" + buildPosition.toShortString() + ", description=" + description + ")";
     }
 }

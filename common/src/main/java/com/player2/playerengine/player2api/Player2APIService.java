@@ -197,7 +197,7 @@ public class Player2APIService {
 
          Map<String, JsonElement> responseMap = Player2HTTPUtils.sendRequest(controller.getOwner(), clientId, "/v1/minecraft/schematics/search", true, requestBody);
 
-         JsonElement resultsJsonElement = responseMap.get("result");
+         JsonElement resultsJsonElement = responseMap.get("results");
          if (resultsJsonElement != null && resultsJsonElement.isJsonArray()) {
             JsonArray resultsJsonArray = resultsJsonElement.getAsJsonArray();
 
@@ -209,7 +209,7 @@ public class Player2APIService {
             return schematics;
          } else {
             System.err.println(
-                  "No result field array in response with keys: [" + String.join(",", responseMap.keySet()) + "]");
+                  "No results field array in response with keys: [" + String.join(",", responseMap.keySet()) + "]");
          }
       } catch (Exception e) {
          System.err.println("Search schematics request failed: " + e.getMessage());
