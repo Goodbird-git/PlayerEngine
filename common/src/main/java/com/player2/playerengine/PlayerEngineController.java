@@ -84,6 +84,7 @@ public class PlayerEngineController {
    public boolean isStopping = false;
    private Player owner;
    public static HashMap<UUID, Player2APIService> staticAPIServices = new HashMap<>();
+   private boolean shouldDefendFromHostiles = false;
 
    public PlayerEngineController(IBaritone baritone, Character character, String player2GameId) {
       this.baritone = baritone;
@@ -406,5 +407,12 @@ public class PlayerEngineController {
          float bdist = b.distanceTo(this.getEntity());
          return Float.compare(adist, bdist);
       }).findFirst();
+   }
+
+   public boolean getShouldDefendFromHostiles(){
+      return this.shouldDefendFromHostiles;
+   }
+   public void setShouldDefendFromHostiles(boolean toSet){
+      this.shouldDefendFromHostiles = toSet;
    }
 }
