@@ -15,6 +15,10 @@ import com.player2.playerengine.tasks.LookAtOwnerTask;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.LivingEntity;
 
 public class AgentSideEffects {
     private static final Logger LOGGER = LogManager.getLogger();
@@ -123,6 +127,17 @@ public class AgentSideEffects {
         for (ServerPlayer player : server.getPlayerList().getPlayers()) {
             broadcastChatToPlayer(server, message, player);
         }
+    }
+
+    public static void teleportOwnerTo(AgentConversationData data){
+        Player owner = data.getMod().getOwner();
+        LivingEntity entity = data.getEntity();
+
+        double x = entity.getX() + 0.5;
+        double y = entity.getY() + 0.5;
+        double z = entity.getZ() + 0.5;
+
+        owner.teleportTo(x, y, z);
     }
 
 }

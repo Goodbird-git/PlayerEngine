@@ -26,7 +26,9 @@ import com.player2.playerengine.player2api.status.StatusUtils;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
-
+import java.util.Collection;
+import java.util.Collections;
+import java.util.stream.Collectors;
 
 
 public class ConversationManager {
@@ -120,6 +122,11 @@ public class ConversationManager {
         if (!hasInit) {
             init();
         }
+        queueData.forEach((k, v) -> {
+            if(v.getMod().getPlayer().level() == null || v.getMod().getPlayer().getServer() == null){
+                despwnCompanion(k);
+            }
+        });
 
         Consumer<Event.CharacterMessage> onCharacterEvent = (data) -> {
             AgentSideEffects.onEntityMessage(server, data);
@@ -146,10 +153,32 @@ public class ConversationManager {
     }
 
     private static boolean isCloseToPlayer(AgentConversationData data, String userName) {
+        LOGGER.info("Passing msg btw {} <-> {}, owner {}", data.getName(), userName, data.getMod().getOwnerUsername());
+        if(data.getMod().getOwnerUsername().equals(userName)){
+            LOGGER.info("Passing b.c. is owner", data.getName(), userName);
+            return true;
+        }
         return StatusUtils.getDistanceToUsername(data.getMod(), userName) < messagePassingMaxDistance;
     }
 
-    public void despwnCompanion(UUID id) {
+    public static void despwnCompanion(UUID id) {
         queueData.remove(id);
+    }
+
+    public static void syncQueueData(Collection<UUID> validUuids) {
+        queueData.keySet().retainAll(validUuids);
+    } 
+
+    public static Collection<AgentConversationData> getDataByOwner(UUID ownerId) {
+        if (ownerId == null) return Collections.emptyList();
+        return queueData.values().stream()
+                .filter(data -> {
+                    if (data == null || data.getMod() == null) return false;
+                    Player owner = data.getMod().getOwner();
+                    if(owner == null) return false;
+                    LOGGER.info("getDataByOwner: ownerId={}, test={}", ownerId, owner.getUUID());
+                    return owner != null && ownerId.equals(owner.getUUID());
+                })
+                .collect(Collectors.toList());
     }
 }
