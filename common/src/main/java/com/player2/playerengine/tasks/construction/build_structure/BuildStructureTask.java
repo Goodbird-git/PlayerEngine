@@ -221,7 +221,14 @@ public class BuildStructureTask extends Task {
                     LOGGER.info("ASDF REPLACING BLOCK({}): {} -> {} ({})", worldPos, currentState.getBlock().getName(), desiredState.toString());
                     mod.getWorld().setBlock(worldPos, 
                     desiredState, 3);
+
                     // block place delay
+                    // Hit a target of maximum 3 min build
+                    // Speed up otherwise
+                    float targetMaxBuildTime = 3f * 60f;
+                    int blocksToPlace = xs * ys * zs;
+                    float blockPlaceDelay = Math.min(blocksToPlace > 0 ? (targetMaxBuildTime / blocksToPlace) : 0.3f, 0.3f);
+                    blockPlaceTimer.setInterval(blockPlaceDelay);
                     blockPlaceTimer.reset();
                     foundInvalidBlock = true;
                 } else {
