@@ -3,26 +3,32 @@ package com.player2.playerengine.player2api.manager;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import java.util.Collection;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
+import java.util.Collections;
+import java.util.stream.Collectors;
 
 import com.player2.playerengine.player2api.AgentSideEffects;
 import com.player2.playerengine.player2api.Character;
 import com.player2.playerengine.player2api.Event;
 import com.player2.playerengine.player2api.LLMCompleter;
 import com.player2.playerengine.player2api.AgentConversationData;
+
 import dev.architectury.event.EventResult;
 import dev.architectury.event.events.common.ChatEvent;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import com.player2.playerengine.PlayerEngineController;
 import com.player2.playerengine.player2api.Event.UserMessage;
 import com.player2.playerengine.player2api.status.StatusUtils;
+
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
@@ -119,6 +125,11 @@ public class ConversationManager {
         if (!hasInit) {
             init();
         }
+        queueData.forEach((k, v) -> {
+            if(v.getMod().getPlayer().level() == null || v.getMod().getPlayer().getServer() == null){
+                despwnCompanion(k);
+            }
+        });
 
         Consumer<Event.CharacterMessage> onCharacterEvent = (data) -> {
             AgentSideEffects.onEntityMessage(server, data);
@@ -145,10 +156,37 @@ public class ConversationManager {
     }
 
     private static boolean isCloseToPlayer(AgentConversationData data, String userName) {
+        LOGGER.info("Passing msg btw {} <-> {}, owner {}", data.getName(), userName, data.getMod().getOwnerUsername());
+        if(data.getMod().getOwnerUsername().equals(userName)){
+            LOGGER.info("is owner", data.getName(), userName);
+            return true;
+        }
         return StatusUtils.getDistanceToUsername(data.getMod(), userName) < messagePassingMaxDistance;
     }
 
-    public void despwnCompanion(UUID id) {
+
+    // recall (map : Map<T, UUID>).values() : Collection<UUID>
+    public static void syncQueueData(Collection<UUID> validUuids) {
+        queueData.keySet().retainAll(validUuids);
+    } 
+
+    public static void despwnCompanion(UUID id) {
         queueData.remove(id);
     }
+
+    public static Collection<AgentConversationData> getDataByOwner(UUID ownerId) {
+        if (ownerId == null) return Collections.emptyList();
+
+        return queueData.values().stream()
+                .filter(data -> {
+                    if (data == null || data.getMod() == null) return false;
+                    Player owner = data.getMod().getOwner();
+                    if(owner == null) return false;
+                    LOGGER.info("getDataByOwner: ownerId={}, test={}", ownerId, owner.getUUID());
+                    return owner != null && ownerId.equals(owner.getUUID());
+                })
+                .collect(Collectors.toList());
+    }
+
+
 }

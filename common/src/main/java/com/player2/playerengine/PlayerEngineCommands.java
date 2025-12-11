@@ -32,6 +32,7 @@ public class PlayerEngineCommands {
                   new FarmCommand(),
                   new EatFoodCommand(),
                   new PickupDropsCommand(),
+                  new SetHostileAttackCommand(),
                   new FishCommand());
    }
 }
