@@ -18,6 +18,9 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 public class Player2APIService {
    private static final Logger LOGGER = LogManager.getLogger();
@@ -177,5 +180,63 @@ public class Player2APIService {
       } catch (Exception var2) {
          System.err.printf("Heartbeat Fail: %s", var2.getMessage());
       }
+   }
+
+
+
+
+
+      /**
+    * Search for schematics given a query
+    * 
+    * @return List of schematics matching the query
+    */
+   public List<JsonObject> searchSchematics(String query) {
+      try {
+         JsonObject requestBody = new JsonObject();
+         requestBody.addProperty("query", query);
+         requestBody.addProperty("max_results", 10);
+
+         Map<String, JsonElement> responseMap = Player2HTTPUtils.sendRequest(controller.getOwner(), clientId, "/v1/minecraft/schematics/search", true, requestBody);
+
+         JsonElement resultsJsonElement = responseMap.get("results");
+         if (resultsJsonElement != null && resultsJsonElement.isJsonArray()) {
+            JsonArray resultsJsonArray = resultsJsonElement.getAsJsonArray();
+
+            List<JsonObject> schematics = new ArrayList<>();
+            for (JsonElement voiceElement : resultsJsonArray) {
+               JsonObject voiceObject = voiceElement.getAsJsonObject();
+               schematics.add(voiceObject);
+            }
+            return schematics;
+         } else {
+            System.err.println(
+                  "No results field array in response with keys: [" + String.join(",", responseMap.keySet()) + "]");
+         }
+      } catch (Exception e) {
+         System.err.println("Search schematics request failed: " + e.getMessage());
+      }
+      return Collections.emptyList();
+   }
+
+   /**
+    * Get schematic binary given a schematic ID
+    * 
+    * @return Schematic binary data
+    */
+   public String getSchematicBinary(String schematicId) {
+      try {
+         Map<String, JsonElement> responseMap = Player2HTTPUtils.sendRequest(controller.getOwner(), clientId, "/v1/minecraft/schematics/" + schematicId, false, null);
+         JsonElement dataJsonElement = responseMap.get("data");
+         if (dataJsonElement != null && dataJsonElement.isJsonPrimitive()) {
+            return dataJsonElement.getAsString();
+         } else {
+            System.err.println(
+                  "No data field primitive in response with keys: [" + String.join(",", responseMap.keySet()) + "]");
+         }
+      } catch (Exception e) {
+         System.err.println("Get schematic binary request failed: " + e.getMessage());
+      }
+      return "";
    }
 }

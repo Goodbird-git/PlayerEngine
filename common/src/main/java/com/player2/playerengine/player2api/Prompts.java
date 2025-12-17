@@ -356,4 +356,116 @@ public class Prompts {
     return buildStructurePrompt;
   }
 
+
+
+
+
+ private static final String selectSchematicPrompt = """
+        Given the following schematics, select the ID of the schematic that most clearly matches the query and has the highest quality.
+        Your input is JSON, and you can use the name, description, and download count fields to determine the best match.
+        Download count can be used to guess that something is of higher quality. Use this when there are a lot of similar results and avoid results with very low downloads.
+        Your output MUST be one of the "id" fields, without quotes. Do not output quotes in the reply, it should ONLY contain alphanumeric and dash characters.
+        FEEL FREE to pick a DIFFERENT ID from the one's we have below, the ones below are just examples.
+        EXAMPLES:
+        INPUT:
+          {
+            "query": "A large mansion made out of wood.",
+            "options": [
+              {
+                "name": "empire state building",
+                "description": "The empire state building in New York",
+                "download_count": 1000,
+                "id": "01913299-8e85-7a8b-8764-e496315e217b"
+              },
+              {
+                "name": "brick apartment",
+                "description": "A median sized apartment building made of bricks",
+                "download_count": 400,
+                "id": "01913299-c266-7e72-961c-b382af552cfb"
+              },
+              {
+                "name": "ship",
+                "description": "A large wooden ship",
+                "download_count": 500,
+                "id": "01913299-d777-75ab-b69c-1acdba677003"
+              },
+              {
+                "name": "cozy house",
+                "description": "A three story house with a spiral staircase, a big bed, and lots of goodies, fancier than the houses from buildSimpleHouse function but takes a lot longer to build",
+                "download_count": 500,
+                "id": "01913299-eb5f-7287-86c4-d0c1b3902e4b"
+              },
+              {
+                "name": "fishing hut",
+                "description": "A fishing hut, a small wooden house with a dock, bot need to build it next to water block, find water block first then build",
+                "download_count": 500,
+                "id": "01913786-ef38-756b-b731-5fe0c60e0526"
+              }
+            ]
+          }
+        OUTPUT:
+          01913299-eb5f-7287-86c4-d0c1b3902e4b
+        REASONING (NOT part of output, here so you understand why we picked this id):
+          You reply with the ID of the cozy house because it most closely matches a large house made out of wood.
+        INPUT:
+          {
+            "query": "A boat.",
+            "options": [
+              {
+                "name": "small yacht",
+                "description": "A modern small yacht",
+                "id": "0191329a-a7e0-74df-9ab1-880217d10075"
+              },
+              {
+                "name": "ship",
+                "description": "A large wooden ship",
+                "id": "01913299-d777-75ab-b69c-1acdba677003"
+              },
+            ]
+          }
+        OUTPUT:
+          0191329a-a7e0-74df-9ab1-880217d10075
+        REASONING (NOT part of output, here so you understand why we picked this id):
+          The query was a boat. Both options are boats and equally fit the query, so just pick the one that is easier to make. A small yacht is probably easier to build than a large boat.
+        INPUT:
+          {
+            "query": "A house.",
+            "options": [
+              {
+                "name": "house",
+                "description": "idk",
+                "download_count": 3,
+                "id": "48d4884d-0d04-4d34-9ab5-f3b13d6e8cfc"
+              },
+              {
+                "name": "big house",
+                "description": "a big house with everything in it",
+                "download_count": 10,
+                "id": "52e292d4-8c63-4f05-b34d-f1f079ca2c88"
+              },
+              {
+                "name": "house for me",
+                "description": "house",
+                "download_count": 2,
+                "id": "7f72b147-a464-4753-afcd-b71ef9e1f3db"
+              },
+              {
+                "name": "ship",
+                "description": "A large wooden ship",
+                "download_count": 500,
+                "id": "01913299-d777-75ab-b69c-1acdba677003"
+              },
+            ]
+          }
+        OUTPUT:
+          52e292d4-8c63-4f05-b34d-f1f079ca2c88
+        REASONING (NOT part of output, here so you understand why we picked this id):
+          The big house has the highest number of downloads AND the description is higher quality than the other houses. It also matches the query, unlike the ship which does not.
+      """;
+
+
+  public static String getSelectSchematicPrompt() {
+    return selectSchematicPrompt;
+  } 
+
 }
