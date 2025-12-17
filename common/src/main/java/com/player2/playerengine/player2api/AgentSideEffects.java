@@ -82,9 +82,10 @@ public class AgentSideEffects {
         }
 
         // add quotes to build_structure so it gets proccessed as one arg:
-        String processedCommandWithPrefix = commandWithPrefix.replaceFirst(
-                "^(@build_structure)\\s+(?![\"'])(.+)$",
-                "$1 \"$2\"");
+        String processedCommandWithPrefix = commandWithPrefix;
+        //  commandWithPrefix.replaceFirst(
+        //         "^(@build_structure)\\s+(?![\"'])(.+)$",
+        //         "$1 \"$2\"");
 
         cmdExecutor.execute(processedCommandWithPrefix, () -> {
             if (mod.isStopping) {
