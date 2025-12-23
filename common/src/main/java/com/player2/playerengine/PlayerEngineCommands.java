@@ -1,27 +1,8 @@
 package com.player2.playerengine;
 
-import com.player2.playerengine.commands.AttackPlayerOrMobCommand;
-import com.player2.playerengine.commands.BodyLanguageCommand;
-import com.player2.playerengine.commands.BuildStructureCommand;
-import com.player2.playerengine.commands.DepositCommand;
-import com.player2.playerengine.commands.EquipCommand;
-import com.player2.playerengine.commands.FarmCommand;
-import com.player2.playerengine.commands.FishCommand;
-import com.player2.playerengine.commands.FollowCommand;
-import com.player2.playerengine.commands.FoodCommand;
-import com.player2.playerengine.commands.GamerCommand;
-import com.player2.playerengine.commands.GetCommand;
-import com.player2.playerengine.commands.GiveCommand;
-import com.player2.playerengine.commands.GotoCommand;
-import com.player2.playerengine.commands.HeroCommand;
-import com.player2.playerengine.commands.IdleCommand;
-import com.player2.playerengine.commands.LocateStructureCommand;
-import com.player2.playerengine.commands.MeatCommand;
-import com.player2.playerengine.commands.ReloadSettingsCommand;
-import com.player2.playerengine.commands.ResetMemoryCommand;
-import com.player2.playerengine.commands.SetAIBridgeEnabledCommand;
-import com.player2.playerengine.commands.StopCommand;
-import com.player2.playerengine.commands.random.ScanCommand;
+import com.player2.playerengine.commands.*;
+import com.player2.playerengine.commands.*;
+import com.player2.playerengine.commands.random.*;
 import com.player2.playerengine.commands.base.CommandException;
 
 public class PlayerEngineCommands {
@@ -49,6 +30,9 @@ public class PlayerEngineCommands {
                   new AttackPlayerOrMobCommand(),
                   new SetAIBridgeEnabledCommand(),
                   new FarmCommand(),
+                  new EatFoodCommand(),
+                  new PickupDropsCommand(),
+                  new SetHostileAttackCommand(),
                   new FishCommand());
    }
 }

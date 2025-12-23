@@ -150,6 +150,10 @@ public class MobDefenseChain extends SingleTaskChain {
 
    @Override
    public float getPriority() {
+      if(this.controller.getShouldDefendFromHostiles()){
+         return 0.0F;
+      }
+
       this.cachedLastPriority = this.getPriorityInner();
       if (this.getCurrentTask() == null) {
          this.cachedLastPriority = 0.0F;
