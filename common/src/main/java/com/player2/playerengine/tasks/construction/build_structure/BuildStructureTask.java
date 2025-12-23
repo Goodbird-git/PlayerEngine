@@ -10,6 +10,8 @@ import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.ArrayDeque;
+import java.util.Deque;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -28,6 +30,7 @@ import com.player2.playerengine.player2api.Player2APIService;
 import com.player2.playerengine.player2api.Prompts;
 import com.player2.playerengine.tasks.base.Task;
 import com.player2.playerengine.util.time.TimerGame;
+import com.player2.playerengine.tasks.construction.build_structure.StructureFromCode.SetBlockCommand;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -307,6 +310,9 @@ public class BuildStructureTask extends Task {
     private class BuildFromCode extends Task {
         String code;
 
+        private TimerGame blockPlaceTimer = new TimerGame(0.1f);
+        Deque<SetBlockCommand> setBlockQueue = new ArrayDeque<>();
+
         private ExecutorService buildThread;
         // outer Option: is done, inner option: is error
         Optional<Optional<String>> result = Optional.empty();
@@ -314,17 +320,15 @@ public class BuildStructureTask extends Task {
         public BuildFromCode(String code) {
             this.code = code;
             this.buildThread = Executors.newSingleThreadExecutor();
+            synchronized (setBlockQueue) {
+                setBlockQueue.clear();
+            }
             buildThread.submit(() -> {
                 StructureFromCode.buildStructureFromCode(code, setBlockData -> {
-                    LOGGER.info("setBlock(x={}, y={}, z={}, blockName={})",
-                            setBlockData.x, setBlockData.y, setBlockData.z, setBlockData.blockName);
-                    ResourceLocation id = ResourceLocation.fromNamespaceAndPath("minecraft", setBlockData.blockName);
-                    Block block = BuiltInRegistries.BLOCK.get(id);
-                    // 3 means send to clients (2) and notify neighbors/update block states (1).
-                    // maybe do 2 if you dont want
-                    // redstone/etc updating/torches falling probably
-                    mod.getWorld().setBlock(new BlockPos(setBlockData.x, setBlockData.y, setBlockData.z),
-                            block.defaultBlockState(), 3);
+                    // Queue up
+                    synchronized (setBlockQueue) {
+                        setBlockQueue.add(setBlockData);
+                    }                    
                 }, (errStr) -> {
                     result = Optional.of(Optional.of(errStr));
                 }, () -> {
@@ -349,17 +353,40 @@ public class BuildStructureTask extends Task {
         protected void onStop(Task var1) {
             // TODO Auto-generated method stub
             buildThread.shutdownNow();
+            synchronized (setBlockQueue) {
+                setBlockQueue.clear();
+            }
         }
 
         @Override
         protected Task onTick() {
             // TODO Auto-generated method stub
+
+            synchronized (setBlockQueue) {
+                if (setBlockQueue.size() == 0) {
+                    return null;
+                }
+                if (!blockPlaceTimer.elapsed()) {
+                    return null;
+                }
+                SetBlockCommand setBlockData = setBlockQueue.poll();
+                LOGGER.info("setBlock(x={}, y={}, z={}, blockName={})",
+                        setBlockData.x, setBlockData.y, setBlockData.z, setBlockData.blockName);
+                ResourceLocation id = ResourceLocation.fromNamespaceAndPath("minecraft", setBlockData.blockName);
+                Block block = BuiltInRegistries.BLOCK.get(id);
+                // 3 means send to clients (2) and notify neighbors/update block states (1).
+                // maybe do 2 if you dont want
+                // redstone/etc updating/torches falling probably
+                mod.getWorld().setBlock(new BlockPos(setBlockData.x, setBlockData.y, setBlockData.z),
+                        block.defaultBlockState(), 3);
+                blockPlaceTimer.reset();
+            }
             return null;
         }
 
         @Override
         public boolean isFinished() {
-            return result.isPresent();
+            return result.isPresent() && setBlockQueue.size() == 0;
         }
 
         @Override
