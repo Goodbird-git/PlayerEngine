@@ -39,6 +39,9 @@ dependencies {
 
     common(project(path: ':common', configuration: 'namedElements')) { transitive = false }
     shadowBundle project(path: ':common', configuration: 'transformProductionNeoForge')
+
+    implementation 'net.sandrohc:schematic4j:1.1.0'
+    include 'net.sandrohc:schematic4j:1.1.0'
 }
 
 processResources {
