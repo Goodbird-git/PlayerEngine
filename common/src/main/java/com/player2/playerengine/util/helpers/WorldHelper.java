@@ -206,7 +206,7 @@ public interface WorldHelper {
 
    static boolean isInNetherPortal(PlayerEngineController controller) {
       LivingEntity player = controller.getPlayer();
-      return player == null ? false : player.portalProcess.isInsidePortalThisTick();
+      return player != null && player.portalProcess != null && player.portalProcess.isInsidePortalThisTick();
    }
 
    static boolean canPlace(PlayerEngineController controller, BlockPos pos) {

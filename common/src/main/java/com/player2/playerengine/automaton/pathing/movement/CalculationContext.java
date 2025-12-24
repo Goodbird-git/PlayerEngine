@@ -40,6 +40,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.Enchantments;
+import net.minecraft.world.item.enchantment.ItemEnchantments;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -119,7 +120,9 @@ public class CalculationContext {
       this.allowDownward = baritone.settings().allowDownward.get();
       this.maxFallHeightNoWater = baritone.settings().maxFallHeightNoWater.get();
       this.maxFallHeightBucket = baritone.settings().maxFallHeightBucket.get();
-      int depth = entity.getItemBySlot(EquipmentSlot.FEET).get(DataComponents.ENCHANTMENTS).entrySet().stream().filter(e->e.getKey().unwrapKey().get().equals(Enchantments.DEPTH_STRIDER)).findFirst().get().getIntValue();
+
+      int depth = EnchantmentHelper.getItemEnchantmentLevel(entity.registryAccess().getOrThrow(Enchantments.DEPTH_STRIDER), entity.getItemBySlot(EquipmentSlot.FEET));
+
       if (depth > 3) {
          depth = 3;
       }

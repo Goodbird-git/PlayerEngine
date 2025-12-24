@@ -26,6 +26,5 @@
     "baritone.MixinServerChunkManager",
     "baritone.MixinServerCommandSource",
     "baritone.MixinUtil"
-  ],
-  "refmap": "playerengine-refmap.json"
+  ]
 }

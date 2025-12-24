@@ -14,7 +14,7 @@ public final class PlayerEngineClient {
    public static void onInitializeClient() {
       EntityRendererRegistry.register(()->PlayerEngine.FISHING_BOBBER, CustomFishingBobberRenderer::new);
 
-      NetworkManager.registerReceiver(NetworkManager.Side.S2C, ResourceLocation.fromNamespaceAndPath("com/player2/playerengine", "stream_tts"), (buf, context) -> {
+      NetworkManager.registerReceiver(NetworkManager.Side.S2C, ResourceLocation.fromNamespaceAndPath("playerengine", "stream_tts"), (buf, context) -> {
          String clientId = buf.readUtf();
          String token = buf.readUtf();
          String text = buf.readUtf();

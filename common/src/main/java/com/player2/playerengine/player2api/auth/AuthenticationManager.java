@@ -11,6 +11,7 @@ import org.apache.logging.log4j.Logger;
 
 import java.net.URI;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.*;
 import com.player2.playerengine.player2api.utils.HTTPUtils;
 import com.player2.playerengine.player2api.utils.HttpApiException;
@@ -48,10 +49,10 @@ public class AuthenticationManager {
             return ongoingAuths.get(authKey);
         }
 
-        String storedToken = TokenStorage.getToken(username, clientId);
-        if (storedToken != null && !storedToken.isEmpty()) {
+        Optional<String> storedToken = TokenStorage.getToken(username, clientId);
+        if (storedToken.isPresent() && !storedToken.get().isEmpty()) {
             LOGGER.info("Found stored token for {}", authKey);
-            return CompletableFuture.completedFuture(storedToken);
+            return CompletableFuture.completedFuture(storedToken.get());
         }
 
         CompletableFuture<String> authFuture = new CompletableFuture<>();

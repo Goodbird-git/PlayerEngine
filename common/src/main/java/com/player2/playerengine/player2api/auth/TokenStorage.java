@@ -8,6 +8,7 @@ import net.minecraft.nbt.NbtIo;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Optional;
 
 public class TokenStorage {
     private static final Path PATH = DirUtil.getGameDir().resolve("playerengine_token_storage.dat");
@@ -22,8 +23,8 @@ public class TokenStorage {
         return username + ":" + clientId;
     }
 
-    static String getToken(String username, String clientId) {
-        return getInstance().tokensStored.getString(getInstance().makeKey(username, clientId)).get();
+    static Optional<String> getToken(String username, String clientId) {
+        return getInstance().tokensStored.getString(getInstance().makeKey(username, clientId));
     }
 
     static void storeToken(String username, String clientId, String token) {

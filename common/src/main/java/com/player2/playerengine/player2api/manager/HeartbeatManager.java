@@ -16,7 +16,7 @@ public class HeartbeatManager {
     }
 
     static long getLastTime(String username, String clientId) {
-        return getInstance().tokensStored.getLong(getInstance().makeKey(username, clientId)).get();
+        return getInstance().tokensStored.getLong(getInstance().makeKey(username, clientId)).orElse(0L);
     }
 
     public static void storeHeartbeatTime(String username, String clientId) {

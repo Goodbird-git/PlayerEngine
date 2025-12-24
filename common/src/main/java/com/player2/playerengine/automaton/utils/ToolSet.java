@@ -27,8 +27,10 @@ import net.minecraft.core.component.DataComponents;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
@@ -60,7 +62,7 @@ public class ToolSet {
    }
 
    public boolean hasSilkTouch(ItemStack stack) {
-      return stack.get(DataComponents.ENCHANTMENTS).entrySet().stream().anyMatch(e->e.getKey().unwrapKey().get().equals(Enchantments.SILK_TOUCH));
+      return EnchantmentHelper.getItemEnchantmentLevel(player.registryAccess().getOrThrow(Enchantments.DEPTH_STRIDER), stack)!=0;
    }
 
    public int getBestSlot(Block b, boolean preferSilkTouch) {
@@ -122,7 +124,7 @@ public class ToolSet {
       } else {
          float speed = item.getDestroySpeed(state);
          if (speed > 1.0F) {
-            int effLevel = item.get(DataComponents.ENCHANTMENTS).entrySet().stream().filter(e->e.getKey().unwrapKey().get().equals(Enchantments.EFFICIENCY)).findFirst().get().getIntValue();
+            int effLevel = item.get(DataComponents.ENCHANTMENTS)==null || item.get(DataComponents.ENCHANTMENTS).isEmpty()?0: item.get(DataComponents.ENCHANTMENTS).entrySet().stream().filter(e->e.getKey().unwrapKey().get().equals(Enchantments.EFFICIENCY)).findFirst().get().getIntValue();
             if (effLevel > 0 && !item.isEmpty()) {
                speed += effLevel * effLevel + 1;
             }
