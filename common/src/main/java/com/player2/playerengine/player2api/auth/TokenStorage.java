@@ -32,6 +32,12 @@ public class TokenStorage {
         getInstance().save();
     }
 
+    public static void clearAllTokens() {
+        System.out.println("[TokenStorage]: Clearing all tokens to force reauth");
+        getInstance().tokensStored = new CompoundTag();
+        getInstance().save();
+    }
+
     private void load() {
         if (Files.exists(PATH)) {
             try {
