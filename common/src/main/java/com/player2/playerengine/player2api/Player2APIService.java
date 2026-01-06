@@ -33,6 +33,10 @@ public class Player2APIService {
       this.controller = controller;
    }
 
+   public String getClientId() {
+      return clientId;
+   }
+
    public JsonObject completeConversation(ConversationHistory conversationHistory) throws Exception {
       JsonObject requestBody = new JsonObject();
       JsonArray messagesArray = new JsonArray();
