@@ -27,6 +27,9 @@ public class CraftingHelper {
    }
 
    private static boolean canCraftItemNow(PlayerEngineController mod, List<ItemStack> inventoryStacks, CraftingRecipe recipe, HashSet<Item> alreadyChecked) {
+      if(mod.getCraftingRecipeTracker()==null || mod.getCraftingRecipeTracker().getRecipeResult(recipe)==null){
+          return false;
+      }
       Item recipeResult = mod.getCraftingRecipeTracker().getRecipeResult(recipe).getItem();
       if (alreadyChecked.contains(recipeResult)) {
          return false;

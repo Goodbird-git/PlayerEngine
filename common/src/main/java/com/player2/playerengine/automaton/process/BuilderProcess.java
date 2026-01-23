@@ -733,25 +733,28 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
       for (int i = 0; i < size; i++) {
          ItemStack stack = (ItemStack)((IInventoryProvider)this.ctx.entity()).getLivingInventory().main.get(i);
          if (!stack.isEmpty() && stack.getItem() instanceof BlockItem) {
-            BlockState placementState = ((BlockItem)stack.getItem())
-               .getBlock()
-               .getStateForPlacement(
-                  new BlockPlaceContext(
-                     new UseOnContext(
-                        this.ctx.world(),
-                        null,
-                        InteractionHand.MAIN_HAND,
-                        stack,
-                        new BlockHitResult(
-                           new Vec3(this.ctx.entity().getX(), this.ctx.entity().getY(), this.ctx.entity().getZ()), Direction.UP, this.ctx.feetPos(), false
-                        )
-                     ) {
-                        public boolean isSecondaryUseActive() {
-                           return false;
-                        }
-                     }
-                  )
-               );
+            BlockState placementState = null;
+            try {
+                placementState = ((BlockItem) stack.getItem())
+                        .getBlock()
+                        .getStateForPlacement(
+                                new BlockPlaceContext(
+                                        new UseOnContext(
+                                                this.ctx.world(),
+                                                null,
+                                                InteractionHand.MAIN_HAND,
+                                                stack,
+                                                new BlockHitResult(
+                                                        new Vec3(this.ctx.entity().getX(), this.ctx.entity().getY(), this.ctx.entity().getZ()), Direction.UP, this.ctx.feetPos(), false
+                                                )
+                                        ) {
+                                            public boolean isSecondaryUseActive() {
+                                                return false;
+                                            }
+                                        }
+                                )
+                        );
+            } catch (Exception ignored){}
             if (placementState != null) {
                result.add(placementState);
             } else {

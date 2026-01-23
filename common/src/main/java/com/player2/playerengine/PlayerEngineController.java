@@ -120,6 +120,7 @@ public class PlayerEngineController {
       this.initializeCommands();
       PlayerEngineSettings.load(
             newSettings -> {
+               if(newSettings==null) return; 
                this.settings = newSettings;
                List<Item> baritoneCanPlace = Arrays.stream(this.settings.getThrowawayItems(this, true)).toList();
                this.getBaritoneSettings().acceptableThrowawayItems.get().addAll(baritoneCanPlace);
