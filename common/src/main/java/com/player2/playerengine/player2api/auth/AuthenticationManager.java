@@ -1,6 +1,8 @@
 package com.player2.playerengine.player2api.auth;
 
 import com.google.gson.JsonObject;
+import com.player2.playerengine.player2api.utils.HTTPUtils;
+import com.player2.playerengine.player2api.utils.HttpApiException;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
@@ -10,8 +12,6 @@ import org.apache.logging.log4j.Logger;
 
 import java.util.Map;
 import java.util.concurrent.*;
-import com.player2.playerengine.player2api.utils.HTTPUtils;
-import com.player2.playerengine.player2api.utils.HttpApiException;
 
 public class AuthenticationManager {
     private static final Logger LOGGER = LogManager.getLogger();
@@ -30,11 +30,11 @@ public class AuthenticationManager {
         return INSTANCE;
     }
 
-    public static ExecutorService getExecutor(){
+    public static ExecutorService getExecutor() {
         return authExecutor;
     }
 
-    public static ExecutorService getPollingExecutor(){
+    public static ExecutorService getPollingExecutor() {
         return pollingExecutor;
     }
 
@@ -47,6 +47,28 @@ public class AuthenticationManager {
         authenticate(player, clientId);
     }
 
+    public void checkAuth(Player player, String clientId) {
+        AuthKey authKey = new AuthKey(player.getUUID(), clientId);
+        String username = player.getName().getString();
+        try {
+            LOGGER.info("Attempting local login check for {}", authKey);
+            Map<String, com.google.gson.JsonElement> response = HTTPUtils.sendRequest(LOCAL_API_URL, "/v1/login/web/" + clientId, true, new JsonObject(), null);
+            String p2Key = response.get("p2Key").getAsString();
+            if (p2Key != null) {
+                LOGGER.info("Detected relogin for {}", authKey);
+                if (TokenStorage.getToken(username, clientId).isEmpty()) {
+                    player.sendSystemMessage(Component.literal("Authentication for mod '" + clientId + "' successful!"));
+                }
+//                    else {
+//                        player.sendSystemMessage(Component.literal("Reauthentication for mod '" + clientId + "' successful!"));
+//                    }
+                TokenStorage.storeToken(username, clientId, p2Key);
+            }
+        } catch (Exception e) {
+            LOGGER.warn("Local login check for {} failed. Error: {}", authKey, e.getMessage());
+        }
+    }
+
     public CompletableFuture<String> authenticate(Player player, String clientId) {
         AuthKey authKey = new AuthKey(player.getUUID(), clientId);
         String username = player.getName().getString();
@@ -56,7 +78,7 @@ public class AuthenticationManager {
         }
 
         String storedToken = TokenStorage.getToken(username, clientId);
-        if (storedToken != null && !storedToken.isEmpty()) {
+        if (!storedToken.isEmpty()) {
             LOGGER.info("Found stored token for {}", authKey);
             return CompletableFuture.completedFuture(storedToken);
         }
