@@ -126,7 +126,7 @@ public class ConversationManager {
             init();
         }
         queueData.forEach((k, v) -> {
-            if(v.getMod().getPlayer().level() == null || v.getMod().getPlayer().getServer() == null){
+            if(v.getMod().getPlayer().getServer() != server){
                 despwnCompanion(k);
             }
         });
