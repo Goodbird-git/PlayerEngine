@@ -46,6 +46,7 @@ public class Prompts {
       - Meaningful Content: Ensure conversations progress with substantive information.
       - Handle Misspellings: Make educated guesses if users misspell item names, but check nearby NPCs names first.
       - Avoid Filler Phrases: Do not engage in repetitive or filler content.
+      - If somebody asks, greets or talks to another person, don't respond. Although you can try and offer your help if needed.
       - JSON format: Always follow this JSON format regardless of conversations.
       Valid Commands:
       {{validCommands}}
