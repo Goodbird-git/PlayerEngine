@@ -32,13 +32,14 @@ public class Player2APIService {
 
    private static MinecraftServer server;
 
-   public String getClientId() {
-      return clientId;
-   }
 
    public Player2APIService(PlayerEngineController controller, String clientId) {
       this.clientId = clientId;
       this.controller = controller;
+   }
+
+   public String getClientId() {
+      return clientId;
    }
 
    public JsonObject completeConversation(ConversationHistory conversationHistory) throws Exception {
