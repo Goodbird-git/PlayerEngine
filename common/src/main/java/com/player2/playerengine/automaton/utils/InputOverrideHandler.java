@@ -76,6 +76,13 @@ public final class InputOverrideHandler extends Behavior implements IInputOverri
          entity.setShiftKeyDown(false);
          entity.setJumping(this.isInputForcedDown(Input.JUMP));
          float speed = 0.3F;
+         if(entity.isSprinting())
+        {
+           if (this.isInputForcedDown(Input.JUMP))
+              speed *= 1.21;
+           else
+              speed *= 1.13;
+        }
          if (this.isInputForcedDown(Input.MOVE_FORWARD)) {
             entity.zza += speed;
          }
@@ -91,7 +98,11 @@ public final class InputOverrideHandler extends Behavior implements IInputOverri
          if (this.isInputForcedDown(Input.MOVE_RIGHT)) {
             entity.xxa -= speed;
          }
-
+         if(entity.isUsingItem())
+         {
+            entity.xxa = (float)(entity.xxa * 0.2);
+            entity.zza = (float)(entity.zza * 0.2);
+         }
          if (this.isInputForcedDown(Input.SNEAK)) {
             entity.setShiftKeyDown(true);
             entity.xxa = (float)(entity.xxa * 0.3);
