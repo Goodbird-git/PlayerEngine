@@ -23,7 +23,18 @@ public abstract class MixinItemStack implements IItemStack {
    public abstract int getDamageValue();
 
    private void recalculateHash() {
-      this.baritoneHash = this.item == null ? -1 : this.item.hashCode() + this.getDamageValue();
+      if (this.item == null) {
+         this.baritoneHash = -1;
+         return;
+      }
+      try {
+         this.baritoneHash = this.item.hashCode() + this.getDamageValue();
+      } catch (IllegalStateException e) {
+         // Some mods (e.g. ConstructionStick) access NeoForge config values in
+         // getMaxDamage() which may not be loaded yet during recipe deserialization.
+         // Fall back to hash without damage value to avoid crashing the server.
+         this.baritoneHash = this.item.hashCode();
+      }
    }
 
    @Inject(
