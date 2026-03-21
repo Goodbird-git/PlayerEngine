@@ -19,11 +19,39 @@ public abstract class MixinItemStack implements IItemStack {
    @Unique
    private int baritoneHash;
 
+   // Thread-local recursion guard: prevents infinite loop when getDamageValue()
+   // triggers ItemStack.copy -> ItemStack.<init> -> recalculateHash -> getDamageValue
+   // (e.g. Silent Gear MainPartItem.getMaxDamage -> PartInstance -> ItemStack.copy)
+   @Unique
+   private static final ThreadLocal<Boolean> playerengine$inRecalc = ThreadLocal.withInitial(() -> Boolean.FALSE);
+
    @Shadow
    public abstract int getDamageValue();
 
    private void recalculateHash() {
-      this.baritoneHash = this.item == null ? -1 : this.item.hashCode() + this.getDamageValue();
+      if (this.item == null) {
+         this.baritoneHash = -1;
+         return;
+      }
+      // If we're already inside recalculateHash on this thread, skip to avoid recursion.
+      // This breaks the cycle: recalculateHash -> getDamageValue -> getMaxDamage ->
+      // PartInstance -> ItemStack.copy -> ItemStack.<init> -> recalculateHash
+      if (playerengine$inRecalc.get()) {
+         this.baritoneHash = this.item.hashCode();
+         return;
+      }
+      playerengine$inRecalc.set(Boolean.TRUE);
+      try {
+         this.baritoneHash = this.item.hashCode() + this.getDamageValue();
+      } catch (Throwable t) {
+         // Catches failure modes during ItemStack init:
+         // - IllegalStateException: NeoForge config not loaded (e.g. ConstructionStick)
+         // - RuntimeException: client-only class loaded on DEDICATED_SERVER
+         // - StackOverflowError: any remaining deep recursion
+         this.baritoneHash = this.item.hashCode();
+      } finally {
+         playerengine$inRecalc.set(Boolean.FALSE);
+      }
    }
 
    @Inject(
