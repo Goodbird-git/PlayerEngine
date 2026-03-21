@@ -29,9 +29,10 @@ public abstract class MixinItemStack implements IItemStack {
       }
       try {
          this.baritoneHash = this.item.hashCode() + this.getDamageValue();
-      } catch (IllegalStateException e) {
-         // Some mods (e.g. ConstructionStick) access NeoForge config values in
-         // getMaxDamage() which may not be loaded yet during recipe deserialization.
+      } catch (Exception e) {
+         // Catches multiple failure modes during ItemStack init:
+         // - IllegalStateException: NeoForge config not loaded (e.g. ConstructionStick)
+         // - RuntimeException: client-only class loaded on DEDICATED_SERVER (e.g. Undergarden slingshot -> SoundInstance)
          // Fall back to hash without damage value to avoid crashing the server.
          this.baritoneHash = this.item.hashCode();
       }
