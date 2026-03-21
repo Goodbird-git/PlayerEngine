@@ -29,10 +29,11 @@ public abstract class MixinItemStack implements IItemStack {
       }
       try {
          this.baritoneHash = this.item.hashCode() + this.getDamageValue();
-      } catch (Exception e) {
-         // Catches multiple failure modes during ItemStack init:
+      } catch (Throwable t) {
+         // Catches ALL failure modes during ItemStack init (Throwable to include Errors):
          // - IllegalStateException: NeoForge config not loaded (e.g. ConstructionStick)
          // - RuntimeException: client-only class loaded on DEDICATED_SERVER (e.g. Undergarden slingshot -> SoundInstance)
+         // - StackOverflowError: recursive loop in Silent Gear getMaxDamage -> PartInstance -> ItemStack.copy -> recalculateHash
          // Fall back to hash without damage value to avoid crashing the server.
          this.baritoneHash = this.item.hashCode();
       }
