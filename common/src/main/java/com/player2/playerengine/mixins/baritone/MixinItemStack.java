@@ -19,6 +19,12 @@ public abstract class MixinItemStack implements IItemStack {
    @Unique
    private int baritoneHash;
 
+   // Thread-local recursion guard: prevents infinite loop when getDamageValue()
+   // triggers ItemStack.copy -> ItemStack.<init> -> recalculateHash -> getDamageValue
+   // (e.g. Silent Gear MainPartItem.getMaxDamage -> PartInstance -> ItemStack.copy)
+   @Unique
+   private static final ThreadLocal<Boolean> playerengine$inRecalc = ThreadLocal.withInitial(() -> Boolean.FALSE);
+
    @Shadow
    public abstract int getDamageValue();
 
@@ -27,15 +33,24 @@ public abstract class MixinItemStack implements IItemStack {
          this.baritoneHash = -1;
          return;
       }
+      // If we're already inside recalculateHash on this thread, skip to avoid recursion.
+      // This breaks the cycle: recalculateHash -> getDamageValue -> getMaxDamage ->
+      // PartInstance -> ItemStack.copy -> ItemStack.<init> -> recalculateHash
+      if (playerengine$inRecalc.get()) {
+         this.baritoneHash = this.item.hashCode();
+         return;
+      }
+      playerengine$inRecalc.set(Boolean.TRUE);
       try {
          this.baritoneHash = this.item.hashCode() + this.getDamageValue();
       } catch (Throwable t) {
-         // Catches ALL failure modes during ItemStack init (Throwable to include Errors):
+         // Catches failure modes during ItemStack init:
          // - IllegalStateException: NeoForge config not loaded (e.g. ConstructionStick)
-         // - RuntimeException: client-only class loaded on DEDICATED_SERVER (e.g. Undergarden slingshot -> SoundInstance)
-         // - StackOverflowError: recursive loop in Silent Gear getMaxDamage -> PartInstance -> ItemStack.copy -> recalculateHash
-         // Fall back to hash without damage value to avoid crashing the server.
+         // - RuntimeException: client-only class loaded on DEDICATED_SERVER
+         // - StackOverflowError: any remaining deep recursion
          this.baritoneHash = this.item.hashCode();
+      } finally {
+         playerengine$inRecalc.set(Boolean.FALSE);
       }
    }
 
